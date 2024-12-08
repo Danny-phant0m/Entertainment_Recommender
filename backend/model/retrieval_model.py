@@ -56,3 +56,11 @@ movie_model = tf.keras.Sequential([
   tf.keras.layers.Embedding(len(unique_movie_titles) + 1, embedding_dimension)
 ])
 
+metrics = tfrs.metrics.FactorizedTopK(
+  candidates=movies.batch(128).map(movie_model)
+)
+
+task = tfrs.tasks.Retrieval(
+  metrics=metrics
+)
+
