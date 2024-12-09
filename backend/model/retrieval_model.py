@@ -221,10 +221,14 @@ class NoBaseClassMovielensModel(tf.keras.Model):
         metrics["total_loss"] = total_loss
 
         return metrics
-
     
+# init the model and set up learning rate
+model = MovielensModel(user_model, movie_model)
+model.compile(optimizer=tf.keras.optimizers.Adagrad(learning_rate=0.1))
 
+# shuffle, batches and cache the data
+cached_train = train.shuffle(100_000).batch(8192).cache()
+cached_test = test.batch(4096).cache()
 
-  
-    
-
+# train the model
+model.fit(cached_train, epochs=3)
