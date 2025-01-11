@@ -20,9 +20,6 @@ movies.head()
 # Clean up the column names
 movies.columns = movies.columns.str.replace('"', '').str.strip()
 
-# Spliting up the data to rest and train
-
-
 # Extracting the genres column
 genres = movies['genres']
 
@@ -33,24 +30,29 @@ encoder = OneHotEncoder()
 # Fitting and transforming the genres column
 genres_encoded = encoder.fit_transform(genres.values.reshape(-1, 1))
 
+# Get the genres of a specific movie by title
+movie_title = "The Batman"  # Example movie title
+movie_genres = movies[movies['title'] == movie_title]['genres'].values[0]
+
+
 # print(genres_encoded)
 
-# Creating an instance of the NearestNeighbors class
-recommender = NearestNeighbors(metric='cosine')
+# # Creating an instance of the NearestNeighbors class
+# recommender = NearestNeighbors(metric='cosine')
 
-# Fitting the encoded genres to the recommender
-recommender.fit(genres_encoded.toarray())
+# # Fitting the encoded genres to the recommender
+# recommender.fit(genres_encoded.toarray())
 
-# Index of the movie the user has previously watched
-movie_index = 0
+# # Index of the movie the user has previously watched
+# movie_index = 0
 
-# Number of recommendations to return
-num_recommendations = 5
+# # Number of recommendations to return
+# num_recommendations = 5
 
-# Getting the recommendations
-_, recommendations = recommender.kneighbors(genres_encoded[movie_index].toarray(), n_neighbors=num_recommendations)
+# # Getting the recommendations
+# _, recommendations = recommender.kneighbors(genres_encoded[movie_index].toarray(), n_neighbors=num_recommendations)
 
-# Extracting the movie titles from the recommendations
-recommended_movie_titles = movies.iloc[recommendations[0]]['title']
-print(recommended_movie_titles)
+# # Extracting the movie titles from the recommendations
+# recommended_movie_titles = movies.iloc[recommendations[0]]['title']
+# print(recommended_movie_titles)
 
