@@ -7,3 +7,5 @@ google-research/
 # Ignore data files
 backend/data/movies.csv
 backend/data/ratings.csv
+backend/data/TMDB_movie_dataset_v11.csv
+backend/data/TMDB_tv_dataset_v3.csv
