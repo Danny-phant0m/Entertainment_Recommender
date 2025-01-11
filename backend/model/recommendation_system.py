@@ -29,3 +29,16 @@ recommender = NearestNeighbors(metric='cosine')
 # Fitting the encoded genres to the recommender
 recommender.fit(genres_encoded.toarray())
 
+# Index of the movie the user has previously watched
+movie_index = 0
+
+# Number of recommendations to return
+num_recommendations = 5
+
+# Getting the recommendations
+_, recommendations = recommender.kneighbors(genres_encoded[movie_index].toarray(), n_neighbors=num_recommendations)
+
+# Extracting the movie titles from the recommendations
+recommended_movie_titles = movies.iloc[recommendations[0]]['title']
+print(recommended_movie_titles)
+
