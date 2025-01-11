@@ -3,3 +3,7 @@ myenv/
 env/
 venv/
 google-research/
+
+# Ignore data files
+backend/data/movies.csv
+backend/data/ratings.csv
