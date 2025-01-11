@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.neighbors import NearestNeighbors
 
 
 movies = pd.read_csv('../data/movies.csv')
@@ -21,3 +22,10 @@ encoder = OneHotEncoder()
 
 # Fitting and transforming the genres column
 genres_encoded = encoder.fit_transform(genres.values.reshape(-1, 1))
+
+# Creating an instance of the NearestNeighbors class
+recommender = NearestNeighbors(metric='cosine')
+
+# Fitting the encoded genres to the recommender
+recommender.fit(genres_encoded.toarray())
+
