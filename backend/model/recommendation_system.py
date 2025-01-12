@@ -3,6 +3,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.neighbors import NearestNeighbors
 
 
+
 movies = pd.read_csv('../data/TMDB_movie_dataset_v11.csv')
 ratings = pd.read_csv('../data/ratings.csv')
 
@@ -25,14 +26,10 @@ genres = movies['genres']
 
 
 # Creating an instance of the OneHotEncoder
-encoder = OneHotEncoder()
+encoder = OneHotEncoder(sparse_output=False)
 
 # Fitting and transforming the genres column
 genres_encoded = encoder.fit_transform(genres.values.reshape(-1, 1))
-
-# Get the genres of a specific movie by title
-movie_title = "The Batman"  # Example movie title
-movie_genres = movies[movies['title'] == movie_title]['genres'].values[0]
 
 
 # print(genres_encoded)
