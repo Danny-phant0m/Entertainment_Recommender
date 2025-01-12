@@ -3,6 +3,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.neighbors import NearestNeighbors
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPRegressor
+from sklearn.metrics import mean_squared_error
 
 
 movies = pd.read_csv('../data/TMDB_movie_dataset_v11.csv')
@@ -45,6 +46,12 @@ model = MLPRegressor(
 
 # Train the model with the training data
 model.fit(X_train, y_train)
+
+# Evaluate the model using the test data
+y_pred = model.predict(X_test)
+mse = mean_squared_error(y_test, y_pred)
+
+print(mse)
 
 
 # print(genres_encoded)
