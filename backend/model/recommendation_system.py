@@ -1,10 +1,6 @@
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.neighbors import NearestNeighbors
-from sklearn.model_selection import train_test_split
-from sklearn.neural_network import MLPRegressor
-from sklearn.metrics import mean_squared_error
-
 
 movies = pd.read_csv('../data/TMDB_movie_dataset_v11.csv')
 ratings = pd.read_csv('../data/ratings.csv')
@@ -28,50 +24,27 @@ genres = movies['genres']
 
 
 # Creating an instance of the OneHotEncoder
-encoder = OneHotEncoder(sparse_output=False)
+encoder = OneHotEncoder()
 
 # Fitting and transforming the genres column
 genres_encoded = encoder.fit_transform(genres.values.reshape(-1, 1))
 
+# Creating an instance of the NearestNeighbors class
+recommender = NearestNeighbors(metric='cosine')
 
-X_train, X_test, y_train, y_test = train_test_split(genres_encoded, genres_encoded, test_size=0.2, random_state=42)
+# Fitting the encoded genres to the recommender
+recommender.fit(genres_encoded.toarray())
 
-model = MLPRegressor(
-    hidden_layer_sizes=(100,),  # One hidden layer with 100 neurons
-    activation='relu',          # 'relu' activation function
-    solver='adam',              # 'adam' solver for weight optimization
-    max_iter=500,               # Set the number of iterations (epochs)
-    random_state=42             # Set the seed for reproducibility
-)
+# Index of the movie the user has previously watched
+movie_index = 0
 
-# Train the model with the training data
-model.fit(X_train, y_train)
+# Number of recommendations to return
+num_recommendations = 5
 
-# Evaluate the model using the test data
-y_pred = model.predict(X_test)
-mse = mean_squared_error(y_test, y_pred)
+# Getting the recommendations
+_, recommendations = recommender.kneighbors(genres_encoded[movie_index].toarray(), n_neighbors=num_recommendations)
 
-print(mse)
-
-
-# print(genres_encoded)
-
-# # Creating an instance of the NearestNeighbors class
-# recommender = NearestNeighbors(metric='cosine')
-
-# # Fitting the encoded genres to the recommender
-# recommender.fit(genres_encoded.toarray())
-
-# # Index of the movie the user has previously watched
-# movie_index = 0
-
-# # Number of recommendations to return
-# num_recommendations = 5
-
-# # Getting the recommendations
-# _, recommendations = recommender.kneighbors(genres_encoded[movie_index].toarray(), n_neighbors=num_recommendations)
-
-# # Extracting the movie titles from the recommendations
-# recommended_movie_titles = movies.iloc[recommendations[0]]['title']
-# print(recommended_movie_titles)
+# Extracting the movie titles from the recommendations
+recommended_movie_titles = movies.iloc[recommendations[0]]['title']
+print(recommended_movie_titles)
 
