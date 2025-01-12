@@ -31,13 +31,16 @@ movies.columns = movies.columns.str.replace('"', '').str.strip()
 genres = movies['genres']
 keywords = movies['keywords']
 overview = movies['overview']
+tagline = movies['tagline']
+production = movies['production_companies']
+
 
 # Combine genres, keywords, and overview into a single string for each movie
-combined = movies['genres'].fillna('') + ' ' + movies['keywords'].fillna('') + ' ' + movies['overview'].fillna('')
+combined = genres.fillna('') + ' ' + keywords.fillna('') + ' ' + overview.fillna('') + ' ' + tagline.fillna('') + ' ' + production.fillna('') 
 
 # Extract features from text descriptions
 tfidf_vectorizer = TfidfVectorizer()
-tfidf_matrix = tfidf_vectorizer.fit_transform(overview)
+tfidf_matrix = tfidf_vectorizer.fit_transform(combined)
 
 # Example user interactions
 user_interactions = [(27205, 1), (157336, 0), (155, 1)]
@@ -70,30 +73,4 @@ recommended_item_ids = recommended_movies['id']
 print("Recommended Items:")
 for id in recommended_item_ids:
     print(f"Movie {id}")
-
-# # Fitting and transforming the genres column
-# genres_encoded = encoder.fit_transform(genres.values.reshape(-1, 1))
-# keywords_encoded = encoder.fit_transform(keywords.values.reshape(-1, 1))
-
-# # Combining the encoded genres and keywords into a single feature vector
-# combined_features = hstack([genres_encoded, keywords_encoded])
-
-# # Creating an instance of the NearestNeighbors class
-# recommender = NearestNeighbors(metric='cosine')
-
-# # Fitting the encoded genres to the recommender
-# recommender.fit(keywords_encoded.toarray())
-
-# # Index of the movie the user has previously watched
-# movie_index = 0
-
-# # Number of recommendations to return
-# num_recommendations = 5
-
-# # Getting the recommendations
-# _, recommendations = recommender.kneighbors(keywords_encoded[movie_index].toarray(), n_neighbors=num_recommendations)
-
-# # Extracting the movie titles from the recommendations
-# recommended_movie_titles = movies.iloc[recommendations[0]]['title']
-# print(recommended_movie_titles)
 
