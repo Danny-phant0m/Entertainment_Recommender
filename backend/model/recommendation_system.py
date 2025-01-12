@@ -32,6 +32,9 @@ genres = movies['genres']
 keywords = movies['keywords']
 overview = movies['overview']
 
+# Combine genres, keywords, and overview into a single string for each movie
+combined = movies['genres'].fillna('') + ' ' + movies['keywords'].fillna('') + ' ' + movies['overview'].fillna('')
+
 # Extract features from text descriptions
 tfidf_vectorizer = TfidfVectorizer()
 tfidf_matrix = tfidf_vectorizer.fit_transform(overview)
