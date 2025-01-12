@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.neighbors import NearestNeighbors
+from sklearn.model_selection import train_test_split
 
 
 
@@ -31,6 +32,8 @@ encoder = OneHotEncoder(sparse_output=False)
 # Fitting and transforming the genres column
 genres_encoded = encoder.fit_transform(genres.values.reshape(-1, 1))
 
+
+X_train, X_test, y_train, y_test = train_test_split(genres_encoded, genres_encoded, test_size=0.2, random_state=42)
 
 # print(genres_encoded)
 
