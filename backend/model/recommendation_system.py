@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.neighbors import NearestNeighbors
 from sklearn.model_selection import train_test_split
-
+from sklearn.neural_network import MLPRegressor
 
 
 movies = pd.read_csv('../data/TMDB_movie_dataset_v11.csv')
@@ -34,6 +34,18 @@ genres_encoded = encoder.fit_transform(genres.values.reshape(-1, 1))
 
 
 X_train, X_test, y_train, y_test = train_test_split(genres_encoded, genres_encoded, test_size=0.2, random_state=42)
+
+model = MLPRegressor(
+    hidden_layer_sizes=(100,),  # One hidden layer with 100 neurons
+    activation='relu',          # 'relu' activation function
+    solver='adam',              # 'adam' solver for weight optimization
+    max_iter=500,               # Set the number of iterations (epochs)
+    random_state=42             # Set the seed for reproducibility
+)
+
+# Train the model with the training data
+model.fit(X_train, y_train)
+
 
 # print(genres_encoded)
 
