@@ -52,6 +52,22 @@ test_set = test_set.sample(frac=1).reset_index(drop=True)
 
 train_set.shape, test_set.shape
 
+def build_predictions_df(preds_m, dataframe):
+    preds_v = []
+    for row_id, user_id, movie_id, _ in dataframe.itertuples():
+        preds_v.append(preds_m[user_id-1, movie_id-1])
+    preds_df = pd.DataFrame(data={"user_id": dataframe.user_id, "movie_id": dataframe.movie_id, "rating": preds_v})
+    return preds_df
+
+def get_mse(estimator, train_set, test_set):
+    train_preds = build_predictions_df(estimator.predictions, train_set)
+    test_preds = build_predictions_df(estimator.predictions, test_set)
+    
+    train_mse = mean_squared_error(train_set.rating, train_preds.rating)
+    test_mse = mean_squared_error(test_set.rating, test_preds.rating)
+    
+    return train_mse, test_mse
+
 n_users = ratings['user_id'].nunique()
 n_movies = ratings['movie_id'].nunique()
 

@@ -1,5 +1,7 @@
 import numpy as np
-from recommendation_system import build_interactions_matrix, build_similarity_matrix, n_users,n_movies, train_set
+import optuna
+from recommendation_system import build_interactions_matrix, build_similarity_matrix, n_users,n_movies, train_set,test_set,get_mse
+
 
 # predicts ratings on user/item similarites
 class Recommender:
@@ -58,4 +60,19 @@ class Recommender:
                 pred += item_bias
                 
         return pred.clip(0, 5)
-    
+
+def objective(trial):
+    # The list of hyper-parameters we want to optmizer. For each one we define the bounds
+    # and the corresponding name.
+    k = trial.suggest_int("k", 10, 200) # Choose random K  
+    bias_sub = trial.suggest_categorical("bias_sub", [False, True]) # Randomly subtracts the bias value or not
+
+    # Instantiating the model
+    model = Recommender(n_users, n_movies, train_set, kind="item", k=k, bias_sub=bias_sub)
+    # Evaluating the performance
+    _, test_mse = get_mse(model, train_set, test_set)
+    return test_mse
+
+study = optuna.create_study(direction="minimize")
+# Here the parameter search effectively begins.
+study.optimize(objective, n_trials=100)
