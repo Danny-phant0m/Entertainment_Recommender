@@ -67,6 +67,21 @@ def build_interactions_matrix(r_mat, n_users, n_items):
 iter_m = build_interactions_matrix(ratings, n_users, n_movies) # call to create interaction matrix  
 iter_m.shape
 
+# create the similrity matrix
+def build_similarity_matrix(interactions_matrix, kind="user", eps=1e-9):
+    # takes rows as user features
+    if kind == "user":
+        similarity_matrix = interactions_matrix.dot(interactions_matrix.T)
+    # takes columns as item features
+    elif kind == "item":
+        similarity_matrix = interactions_matrix.T.dot(interactions_matrix)
+    norms = np.sqrt(similarity_matrix.diagonal()) + eps
+    return similarity_matrix / (norms[np.newaxis, :] * norms[:, np.newaxis])
+
+u_sim = build_similarity_matrix(iter_m, kind="user")
+i_sim = build_similarity_matrix(iter_m, kind="item")
+
+
 # Removing duplicate rows
 movies.drop_duplicates(inplace=True)
 ratings.drop_duplicates(inplace=True)
