@@ -57,15 +57,16 @@ n_movies = ratings['movie_id'].nunique()
 
 # create the interactions matrix of given ratings dataframe
 def build_interactions_matrix(r_mat, n_users, n_items):
-    iter_m = np.zeros((n_users, n_items))
+    iter_m = np.zeros((n_users, n_items)) # create empty 0 matrix
     
+    # loops through the ratings data
     for _, user_id, movie_id, rating in r_mat.itertuples():
-        iter_m[user_id-1, movie_id-1] = rating
+        iter_m[user_id-1, movie_id-1] = rating # fills the matrix with users ratings
     
     return iter_m
 
 iter_m = build_interactions_matrix(ratings, n_users, n_movies) # call to create interaction matrix  
-iter_m.shape
+iter_m.shape # return the dimensions of the interactions matrix
 
 # create the similrity matrix
 def build_similarity_matrix(interactions_matrix, kind="user", eps=1e-9):
@@ -75,8 +76,8 @@ def build_similarity_matrix(interactions_matrix, kind="user", eps=1e-9):
     # takes columns as item features
     elif kind == "item":
         similarity_matrix = interactions_matrix.T.dot(interactions_matrix)
-    norms = np.sqrt(similarity_matrix.diagonal()) + eps
-    return similarity_matrix / (norms[np.newaxis, :] * norms[:, np.newaxis])
+    norms = np.sqrt(similarity_matrix.diagonal()) + eps # calculates normalization factors
+    return similarity_matrix / (norms[np.newaxis, :] * norms[:, np.newaxis]) # normalize the matrix
 
 u_sim = build_similarity_matrix(iter_m, kind="user")
 i_sim = build_similarity_matrix(iter_m, kind="item")
