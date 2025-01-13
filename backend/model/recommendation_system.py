@@ -52,6 +52,21 @@ test_set = test_set.sample(frac=1).reset_index(drop=True)
 
 train_set.shape, test_set.shape
 
+n_users = ratings['user_id'].nunique()
+n_movies = ratings['movie_id'].nunique()
+
+# create the interactions matrix of given ratings dataframe
+def build_interactions_matrix(r_mat, n_users, n_items):
+    iter_m = np.zeros((n_users, n_items))
+    
+    for _, user_id, movie_id, rating in r_mat.itertuples():
+        iter_m[user_id-1, movie_id-1] = rating
+    
+    return iter_m
+
+iter_m = build_interactions_matrix(ratings, n_users, n_movies) # call to create interaction matrix  
+iter_m.shape
+
 # Removing duplicate rows
 movies.drop_duplicates(inplace=True)
 ratings.drop_duplicates(inplace=True)
