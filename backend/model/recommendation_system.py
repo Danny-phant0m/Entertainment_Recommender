@@ -71,7 +71,7 @@ iter_m.shape
 def build_similarity_matrix(interactions_matrix, kind="user", eps=1e-9):
     # takes rows as user features
     if kind == "user":
-        similarity_matrix = interactions_matrix.dot(interactions_matrix.T)
+        similarity_matrix = interactions_matrix.dot(interactions_matrix.T) # dot product to get similarity matrix
     # takes columns as item features
     elif kind == "item":
         similarity_matrix = interactions_matrix.T.dot(interactions_matrix)
@@ -80,7 +80,6 @@ def build_similarity_matrix(interactions_matrix, kind="user", eps=1e-9):
 
 u_sim = build_similarity_matrix(iter_m, kind="user")
 i_sim = build_similarity_matrix(iter_m, kind="item")
-
 
 # Removing duplicate rows
 movies.drop_duplicates(inplace=True)
