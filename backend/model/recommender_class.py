@@ -50,7 +50,7 @@ class Recommender:
                 item_bias = self.iter_m.mean(axis=0)[np.newaxis, :]
                 iter_m -= item_bias
             # An item has the higher similarity score with itself,
-            # so we skip the first element.
+            # so we skip the first element. because it comparing with itself
             sorted_ids = np.argsort(-self.sim_m)[:, 1:self.k+1]
             for item_id, k_items in enumerate(sorted_ids):
                 pred[:, item_id] = self.sim_m[item_id, k_items].dot(iter_m[:, k_items].T)
@@ -60,6 +60,16 @@ class Recommender:
                 pred += item_bias
                 
         return pred.clip(0, 5)
+    
+    # get the top recommendations
+    def get_top_recomendations(self, item_id, n=6):
+        if self.kind == "user":
+            pass
+        if self.kind == "item":
+            sim_row = self.sim_m[item_id - 1, :] # get the similarity score for the item id
+            items_idxs = np.argsort(-sim_row)[1:n+1] # sorts the scores in dec order
+            similarities = sim_row[items_idxs] # get the top n sim scores  
+            return items_idxs + 1, similarities # Returns the similarties scores of the items
 
 def objective(trial):
     # The list of hyper-parameters we want to optmizer. For each one we define the bounds
