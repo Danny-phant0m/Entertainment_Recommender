@@ -90,3 +90,22 @@ def objective(trial):
 study = optuna.create_study(direction="minimize")
 # Here the parameter search effectively begins.
 study.optimize(objective, n_trials=100)
+
+def title2id(mapper_df, movie_title):
+    return mapper_df.loc[mapper_df.movie_title == movie_title, "movie_title"].index.values[0]
+
+def ids2title(mapper_df, ids_list):
+    titles = []
+    for id in ids_list:
+        titles.append(mapper_df.loc[id, "movie_title"])
+    return titles
+
+def print_recommendations(model, mapper, movie_title):
+    item_id = title2id(movies_mapper, "Toy Story")  # Convert movie title to item_id
+    user_id = 1  # Just an example user ID
+    ids_list, similarities = Recommender.get_top_recomendations(item_id, user_id)
+    titles = ids2title(movies_mapper, ids_list)
+    for title, similarity in zip (titles, similarities):
+        print(f"{similarity:.2f} -- {title}")
+
+print_recommendations(Recommender, movies_mapper, "Toy Story")
