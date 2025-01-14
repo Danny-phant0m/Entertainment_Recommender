@@ -62,8 +62,12 @@ class Recommender:
         return pred.clip(0, 5)
     
     # get the top recommendations
-    def get_top_recomendations(self, item_id, n=6):
+    def get_top_recomendations(self, item_id, user_id ,n=6):
         if self.kind == "user":
+            sim_row = self.sim_m[user_id - 1, :] 
+            items_idxs = np.argsort(-sim_row)[1:n+1]
+            similarities = sim_row[items_idxs]  
+            return items_idxs + 1, similarities
             pass
         if self.kind == "item":
             sim_row = self.sim_m[item_id - 1, :] # get the similarity score for the item id
