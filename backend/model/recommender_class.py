@@ -1,6 +1,6 @@
 import numpy as np
 import optuna
-from recommendation_system import build_interactions_matrix, build_similarity_matrix, n_users,n_movies, train_set,test_set,get_mse
+from recommendation_system import build_interactions_matrix, build_similarity_matrix, n_users,n_movies, train_set,test_set,get_mse,movies_mapper
 
 
 # predicts ratings on user/item similarites

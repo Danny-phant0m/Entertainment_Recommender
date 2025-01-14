@@ -27,6 +27,45 @@ ratings = pd.read_csv(
     low_memory=False
 )
 
+movies_mapper_cols = [
+    "movie_id", 
+    "movie_title", 
+    "release_date", 
+    "video_release_date", 
+    "IMDb_URL", 
+    "unknown",
+    "Action",
+    "Adventure",
+    "Animation",
+    "Childrens",
+    "Comedy",
+    "Crime",
+    "Documentary",
+    "Drama",
+    "Fantasy",
+    "Film_Noir",
+    "Horror",
+    "Musical",
+    "Mystery",
+    "Romance",
+    "Sci_Fi",
+    "Thriller",
+    "War",
+    "Western" 
+]
+movies_mapper = pd.read_csv(
+    "../data/u.item",
+    sep="|",
+    encoding="latin",
+    names=movies_mapper_cols,
+    usecols=["movie_id", "movie_title"], # we only need these columns
+    index_col="movie_id"
+)
+# Remove movies release years from titles
+movies_mapper["movie_title"] = movies_mapper["movie_title"].apply(
+    lambda title: re.sub(r"\(\d{4}\)", "", title).strip()
+)
+
 test_perc = 0.2 # set percentage of test data
 
 # Initialize the train and test dataframes.
