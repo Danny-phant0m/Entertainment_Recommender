@@ -68,7 +68,7 @@ class Recommender:
             items_idxs = np.argsort(-sim_row)[1:n+1]
             similarities = sim_row[items_idxs]  
             return items_idxs + 1, similarities
-            pass
+            
         if self.kind == "item":
             sim_row = self.sim_m[item_id - 1, :] # get the similarity score for the item id
             items_idxs = np.argsort(-sim_row)[1:n+1] # sorts the scores in dec order
@@ -101,11 +101,12 @@ def ids2title(mapper_df, ids_list):
     return titles
 
 def print_recommendations(model, mapper, movie_title):
-    item_id = title2id(movies_mapper, "Toy Story")  # Convert movie title to item_id
+    item_id = title2id(mapper, movie_title)  # Convert movie title to item_id
     user_id = 1  # Just an example user ID
-    ids_list, similarities = Recommender.get_top_recomendations(item_id, user_id)
-    titles = ids2title(movies_mapper, ids_list)
+    ids_list, similarities = model.get_top_recomendations(item_id, user_id)
+    titles = ids2title(mapper, ids_list)
     for title, similarity in zip (titles, similarities):
         print(f"{similarity:.2f} -- {title}")
-
-print_recommendations(Recommender, movies_mapper, "Toy Story")
+# Create an instance of Recommender
+recommender = Recommender(n_users, n_movies, train_set, kind="item")
+print_recommendations(recommender, movies_mapper, "Toy Story")
