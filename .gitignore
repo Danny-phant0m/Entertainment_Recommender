@@ -12,3 +12,7 @@ backend/data/TMDB_tv_dataset_v3.csv
 backend/data/tags.csv
 backend/data/u.data
 backend/data/u.item
+backend/data/ratings_small.csv
+backend/data/TMDB_all_movies.csv
+
+backend/model/__pycache__

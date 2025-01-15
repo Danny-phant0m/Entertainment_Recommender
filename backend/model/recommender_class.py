@@ -1,7 +1,7 @@
 import numpy as np
 import optuna
 from recommendation_system import build_interactions_matrix, build_similarity_matrix, n_users,n_movies, train_set,test_set,get_mse,movies_mapper
-
+from surprise import SVD
 
 # predicts ratings on user/item similarites
 class Recommender:
@@ -78,18 +78,21 @@ class Recommender:
 def objective(trial):
     # The list of hyper-parameters we want to optmizer. For each one we define the bounds
     # and the corresponding name.
-    k = trial.suggest_int("k", 10, 500) # Choose random K  
+    k = trial.suggest_int("k", 10, 200) # Choose random K  
     bias_sub = trial.suggest_categorical("bias_sub", [False, True]) # Randomly subtracts the bias value or not
 
     # Instantiating the model
-    model = Recommender(n_users, n_movies, train_set, kind="item", k=k, bias_sub=bias_sub)
+    # model = Recommender(n_users, n_movies, train_set, kind="item", k=k, bias_sub=bias_sub)
+    # Instantiate the SVD model
+    svd = SVD() 
+   
     # Evaluating the performance
-    _, test_mse = get_mse(model, train_set, test_set)
+    _, test_mse = get_mse(svd, train_set, test_set)
     return test_mse
 
 study = optuna.create_study(direction="minimize")
 # Here the parameter search effectively begins.
-study.optimize(objective, n_trials=500)
+study.optimize(objective, n_trials=100)
 
 def title2id(mapper_df, movie_title):
     return mapper_df.loc[mapper_df.movie_title == movie_title, "movie_title"].index.values[0]
@@ -107,9 +110,21 @@ def print_recommendations(model, mapper, movie_title):
     titles = ids2title(mapper, ids_list)
     for title, similarity in zip (titles, similarities):
         print(f"{similarity:.2f} -- {title}")
+
 # Create an instance of Recommender
 recommender = Recommender(n_users, n_movies, train_set, kind="item")
 recommender2 = Recommender(n_users, n_movies, train_set, kind="user")
+# Instantiate the SVD model
+svd = SVD()
 
-print_recommendations(recommender, movies_mapper, "Batman Returns")
-print_recommendations(recommender2, movies_mapper, "Batman Returns")
+# Train the model on the training set
+svd.fit(train_set)
+# Predict the rating for a specific user and item
+user_id = str(196)  # User ID should be a string
+item_id = str(302)  # Item ID should be a string
+predicted_rating = svd.predict(user_id, item_id).est
+
+print(f"Predicted rating for user {user_id} on item {item_id}: {predicted_rating}")
+
+# print_recommendations(recommender, movies_mapper, "Batman Returns")
+# print_recommendations(recommender2, movies_mapper, "Batman Returns")
