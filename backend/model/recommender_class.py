@@ -78,7 +78,7 @@ class Recommender:
 def objective(trial):
     # The list of hyper-parameters we want to optmizer. For each one we define the bounds
     # and the corresponding name.
-    k = trial.suggest_int("k", 10, 200) # Choose random K  
+    k = trial.suggest_int("k", 10, 500) # Choose random K  
     bias_sub = trial.suggest_categorical("bias_sub", [False, True]) # Randomly subtracts the bias value or not
 
     # Instantiating the model
@@ -89,7 +89,7 @@ def objective(trial):
 
 study = optuna.create_study(direction="minimize")
 # Here the parameter search effectively begins.
-study.optimize(objective, n_trials=100)
+study.optimize(objective, n_trials=500)
 
 def title2id(mapper_df, movie_title):
     return mapper_df.loc[mapper_df.movie_title == movie_title, "movie_title"].index.values[0]
@@ -109,4 +109,7 @@ def print_recommendations(model, mapper, movie_title):
         print(f"{similarity:.2f} -- {title}")
 # Create an instance of Recommender
 recommender = Recommender(n_users, n_movies, train_set, kind="item")
-print_recommendations(recommender, movies_mapper, "Toy Story")
+recommender2 = Recommender(n_users, n_movies, train_set, kind="user")
+
+print_recommendations(recommender, movies_mapper, "Batman Returns")
+print_recommendations(recommender2, movies_mapper, "Batman Returns")
