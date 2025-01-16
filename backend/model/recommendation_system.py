@@ -3,7 +3,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.neighbors import NearestNeighbors
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from surprise.model_selection import train_test_split
+from sklearn.model_selection import train_test_split
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error
@@ -14,14 +14,68 @@ import re
 import os
 from scipy.sparse import hstack
 from surprise import Dataset, Reader, SVD
+from scipy.sparse import csr_matrix
+from sklearn.preprocessing import OrdinalEncoder
 
 
 
 # Creating an instance of the OneHotEncoder
 encoder = OneHotEncoder()
 
-movies = pd.read_csv('../data/TMDB_movie_dataset_v11.csv')
-ratings = pd.read_csv('../data/ratings_small.csv')[['userId', 'movieId', 'rating']]
+#movies = pd.read_csv('../data/TMDB_movie_dataset_v11.csv')
+# ratings = pd.read_csv('../data/ratings_small.csv')[['userId', 'movieId', 'rating']]
+ratings = pd.read_csv('../data/ratings_small.csv')
+movies = pd.read_csv('../data/movies_small.csv')
+
+# Add a new user (new user ID is last user ID + 1)
+new_user_id = ratings['userId'].max() + 1
+new_ratings = pd.DataFrame({
+    'userId': [new_user_id]*11, 
+    'movieId': [131739, 190017,156000,124867,129826,136864,138104,143890,166455,168420,161354],  # Movie IDs that the new user rates
+    'rating': [4.5, 5,4.5,3,4,5,2,4.5,3,5,5]  # Simulated ratings
+})
+
+# Concatenate the new ratings with the original dataset
+ratings = pd.concat([ratings, new_ratings], ignore_index=True)
+
+# Split the data into training and testing sets
+train_data, test_data = train_test_split(ratings, test_size=0.2)
+
+
+# Create matrices for training
+user_item_matrix = train_data.pivot(index='userId', columns='movieId', values='rating').fillna(0)
+item_user_matrix = train_data.pivot(index='movieId', columns='userId', values='rating').fillna(0)
+
+# Calculate cosine similarity between users and items
+user_similarity = cosine_similarity(user_item_matrix)
+user_similarity_df = pd.DataFrame(user_similarity, index=user_item_matrix.index, columns=user_item_matrix.index)
+
+item_similarity = cosine_similarity(item_user_matrix)
+item_similarity_df = pd.DataFrame(item_similarity, index=item_user_matrix.index, columns=item_user_matrix.index)
+
+# Function to make recommendations
+def recommend(user_id, num_recommendations):
+    similar_users = item_similarity_df[user_id].sort_values(ascending=False).index[1:] # finds similar users based on the given userid and skips the first index
+    recommended_items = {}
+    for similar_user in similar_users:
+        items = train_data[train_data['userId'] == similar_user]['movieId'].values # Get all item id of similar users 
+        for item in items:
+            if item not in recommended_items:
+                recommended_items[item] = 0
+            recommended_items[item] += item_similarity_df[user_id][similar_user]
+        if len(recommended_items) >= num_recommendations:
+            break # stops if more that the required number of recommendations
+    recommended_items = sorted(recommended_items.items(), key=lambda x: x[1], reverse=True) # sort the scores in dec order 
+    return [item[0] for item in recommended_items[:num_recommendations]]
+
+# Example: Recommend 5 items for user with ID 1
+recommendations = recommend(131739, 5)
+def ids2title(mapper_df, ids_list):
+    titles = []
+    for id in ids_list:
+        titles.append(mapper_df.loc[id, "title"])
+    return titles
+print(f"Recommendations for user 1: {recommendations}")
 
 # ratings = pd.read_csv(
 #     "../data/u.data",
@@ -76,48 +130,48 @@ ratings = pd.read_csv('../data/ratings_small.csv')[['userId', 'movieId', 'rating
 # train_set, test_set = pd.DataFrame(), pd.DataFrame()
 
 # Add a new user (new user ID is last user ID + 1)
-new_user_id = ratings['userId'].max() + 1
-new_ratings = pd.DataFrame({
-    'userId': [new_user_id]*11, 
-    'movieId': [131739, 190017,156000,124867,129826,136864,138104,143890,166455,168420,161354],  # Movie IDs that the new user rates
-    'rating': [4.5, 5,4.5,3,4,5,2,4.5,3,5,5]  # Simulated ratings
-})
+# new_user_id = ratings['userId'].max() + 1
+# new_ratings = pd.DataFrame({
+#     'userId': [new_user_id]*11, 
+#     'movieId': [131739, 190017,156000,124867,129826,136864,138104,143890,166455,168420,161354],  # Movie IDs that the new user rates
+#     'rating': [4.5, 5,4.5,3,4,5,2,4.5,3,5,5]  # Simulated ratings
+# })
 
-# Concatenate the new ratings with the original dataset
-ratings = pd.concat([ratings, new_ratings], ignore_index=True)
+# # Concatenate the new ratings with the original dataset
+# ratings = pd.concat([ratings, new_ratings], ignore_index=True)
 
-# Load MovieLens dataset and split into train/test sets
-reader = Reader(rating_scale=(1, 5))
-data = Dataset.load_from_df(ratings, reader)
-train_set, test_set = train_test_split(data, test_size=0.2)
+# # Load MovieLens dataset and split into train/test sets
+# reader = Reader(rating_scale=(1, 5))
+# data = Dataset.load_from_df(ratings, reader)
+# train_set, test_set = train_test_split(data, test_size=0.2)
 
-# Instantiate the SVD model
-svd = SVD()
+# # Instantiate the SVD model
+# svd = SVD()
 
-# Train the model on the training set
-svd.fit(train_set)
+# # Train the model on the training set
+# svd.fit(train_set)
 
-# Function to recommend movies based on a given item_id
-def recommend_based_on_item(user_id, top_n=10):
-    predictions = []
-    # Loop through all users and predict the rating for the item
-    for item_id in ratings['movieId'].unique():
-        predicted_rating = svd.predict(user_id, item_id).est
-        predictions.append((item_id, predicted_rating))
+# # Function to recommend movies based on a given item_id
+# def recommend_based_on_item(user_id, top_n=10):
+#     predictions = []
+#     # Loop through all users and predict the rating for the item
+#     for item_id in ratings['movieId'].unique():
+#         predicted_rating = svd.predict(user_id, item_id).est
+#         predictions.append((item_id, predicted_rating))
 
-    # Sort predictions by rating in descending order and get top N recommendations
-    predictions.sort(key=lambda x: x[1], reverse=True)
-    top_predictions = predictions[:top_n]
+#     # Sort predictions by rating in descending order and get top N recommendations
+#     predictions.sort(key=lambda x: x[1], reverse=True)
+#     top_predictions = predictions[:top_n]
 
-    # Return the top N recommended users and their predicted ratings
-    return top_predictions
+#     # Return the top N recommended users and their predicted ratings
+#     return top_predictions
 
-# Example: Get recommendations based on a specific movie (item_id = 302)
-top_n_recommendations = recommend_based_on_item(new_user_id)
+# # Example: Get recommendations based on a specific movie (item_id = 302)
+# top_n_recommendations = recommend_based_on_item(new_user_id)
 
-# Print the recommendations
-for item_id, predicted_rating in top_n_recommendations:
-    print(f"User {new_user_id} has a predicted rating of {predicted_rating} for item {item_id}")
+# # Print the recommendations
+# for item_id, predicted_rating in top_n_recommendations:
+#     print(f"User {new_user_id} has a predicted rating of {predicted_rating} for item {item_id}")
 
 
 # # Check each user.
