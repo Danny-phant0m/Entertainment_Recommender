@@ -155,10 +155,10 @@ def get_mse(estimator, train_set, test_set):
     train_preds = build_predictions_df(estimator.predictions, train_set)
     test_preds = build_predictions_df(estimator.predictions, test_set)
     
-#     train_mse = mean_squared_error(train_set.rating, train_preds.rating)
-#     test_mse = mean_squared_error(test_set.rating, test_preds.rating)
+    train_mse = mean_squared_error(train_set.rating, train_preds.rating)
+    test_mse = mean_squared_error(test_set.rating, test_preds.rating)
     
-#     return train_mse, test_mse
+    return train_mse, test_mse
 
 n_users = ratings['userId'].nunique()
 n_movies = ratings['movieId'].max()

@@ -1,6 +1,6 @@
 import numpy as np
 import optuna
-from recommendation_system import build_interactions_matrix, build_similarity_matrix, n_users,n_movies, train_set,test_set,get_mse,movies_mapper
+from recommendation_system import build_interactions_matrix, build_similarity_matrix, n_users,n_movies, train_set,test_set,get_mse,movies
 from surprise import SVD
 
 # predicts ratings on user/item similarites
@@ -36,11 +36,17 @@ class Recommender:
                 iter_m -= user_bias
             # An user has the higher similarity score with itself,
             # so we skip the first element.
-            sorted_ids = np.argsort(-self.sim_m)[:, 1:self.k+1] # sorts the sim matrix in dec order and get top k similar user/items
+            sorted_ids = np.argsort(-self.sim_m.getrow(0).indices)[1:self.k+1] # sorts the sim matrix in dec order and get top k similar user/items
+            print(sorted_ids)
+            print(self.sim_m)
             for user_id, k_users in enumerate(sorted_ids): # loop through each user
-                pred[user_id, :] = self.sim_m[user_id, k_users].dot(self.iter_m[k_users, :]) # gets predicted ratings
-                pred[user_id, :] /= \
-                    np.abs(self.sim_m[user_id, k_users] + self.eps).sum() + self.eps # normalize the prediction
+                print(self.sim_m[user_id, k_users: k_users+1].toarray().flatten())
+                print(self.iter_m[k_users, :])
+                print(user_id)
+                print(k_users)
+                # pred[user_id, :] = self.sim_m[user_id, k_users].dot(self.iter_m[k_users, :]) # gets predicted ratings
+                # pred[user_id, :] /= \
+                #     np.abs(self.sim_m[user_id, k_users] + self.eps).sum() + self.eps # normalize the prediction
             if self.bias_sub:
                 pred += user_bias
         elif self.kind == "item":
@@ -51,7 +57,7 @@ class Recommender:
                 iter_m -= item_bias
             # An item has the higher similarity score with itself,
             # so we skip the first element. because it comparing with itself
-            sorted_ids = np.argsort(-self.sim_m)[:, 1:self.k+1]
+            sorted_ids = np.argsort(-self.sim_m.data)[1:self.k+1]
             for item_id, k_items in enumerate(sorted_ids):
                 pred[:, item_id] = self.sim_m[item_id, k_items].dot(iter_m[:, k_items].T)
                 pred[:, item_id] /= \
@@ -83,11 +89,9 @@ class Recommender:
 
 #     # Instantiating the model
 #     # model = Recommender(n_users, n_movies, train_set, kind="item", k=k, bias_sub=bias_sub)
-#     # Instantiate the SVD model
-#     svd = SVD() 
    
 #     # Evaluating the performance
-#     _, test_mse = get_mse(svd, train_set, test_set)
+#     _, test_mse = get_mse(model, train_set, test_set)
 #     return test_mse
 
 # study = optuna.create_study(direction="minimize")
@@ -95,12 +99,12 @@ class Recommender:
 # study.optimize(objective, n_trials=100)
 
 def title2id(mapper_df, movie_title):
-    return mapper_df.loc[mapper_df.movie_title == movie_title, "movie_title"].index.values[0]
+    return mapper_df.loc[mapper_df.title == movie_title, "title"].index.values[0]
 
 def ids2title(mapper_df, ids_list):
     titles = []
     for id in ids_list:
-        titles.append(mapper_df.loc[id, "movie_title"])
+        titles.append(mapper_df.loc[id, "title"])
     return titles
 
 def print_recommendations(model, mapper, movie_title):
@@ -112,9 +116,9 @@ def print_recommendations(model, mapper, movie_title):
         print(f"{similarity:.2f} -- {title}")
 
 # Create an instance of Recommender
-recommender = Recommender(n_users, n_movies, train_set, kind="item")
+# recommender = Recommender(n_users, n_movies, train_set, kind="item")
 recommender2 = Recommender(n_users, n_movies, train_set, kind="user")
 
 
-print_recommendations(recommender, movies_mapper, "Batman Returns")
-print_recommendations(recommender2, movies_mapper, "Batman Returns")
+# print_recommendations(recommender, movies, "Batman Returns")
+print_recommendations(recommender2, movies, "Batman Returns")
