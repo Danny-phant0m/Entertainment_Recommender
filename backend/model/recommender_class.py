@@ -116,5 +116,5 @@ recommender = Recommender(n_users, n_movies, train_set, kind="item")
 recommender2 = Recommender(n_users, n_movies, train_set, kind="user")
 
 
-# print_recommendations(recommender, movies_mapper, "Batman Returns")
-# print_recommendations(recommender2, movies_mapper, "Batman Returns")
+print_recommendations(recommender, movies_mapper, "Batman Returns")
+print_recommendations(recommender2, movies_mapper, "Batman Returns")
