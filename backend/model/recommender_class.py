@@ -37,16 +37,27 @@ class Recommender:
             # An user has the higher similarity score with itself,
             # so we skip the first element.
             sorted_ids = np.argsort(-self.sim_m.getrow(0).indices)[1:self.k+1] # sorts the sim matrix in dec order and get top k similar user/items
-            print(sorted_ids)
-            print(self.sim_m)
+            # print(sorted_ids)
+            # print(self.sim_m)
+            similarity_array = []
             for user_id, k_users in enumerate(sorted_ids): # loop through each user
-                print(self.sim_m[user_id, k_users: k_users+1].toarray().flatten())
-                print(self.iter_m[k_users, :])
-                print(user_id)
-                print(k_users)
-                # pred[user_id, :] = self.sim_m[user_id, k_users].dot(self.iter_m[k_users, :]) # gets predicted ratings
-                # pred[user_id, :] /= \
-                #     np.abs(self.sim_m[user_id, k_users] + self.eps).sum() + self.eps # normalize the prediction
+                # print(user_id)
+                # print(k_users)
+                # Directly fetch the similarity score from the sparse matrix
+                similarity_score = self.sim_m[user_id, k_users]
+                similarity_array.append(similarity_score)
+                # Convert to NumPy array
+                # print(np.array(similarity_array).size)
+                # print(similarity_array)
+                # print(self.iter_m)
+                # print(self.iter_m[sorted_ids, :])
+                if len(similarity_array) == sorted_ids.size:  # Make sure it's the right size
+                    similarity_array = np.array(similarity_array)  # Flatten to 1D
+                    pred[user_id, :] = np.dot(similarity_array, self.iter_m[sorted_ids, :])  # Perform dot product
+                    #print(pred[user_id, :])
+                #pred[user_id, :] = np.array(similarity_array).dot(self.iter_m[k_users, :]) # gets predicted ratings
+                pred[user_id, :] /= \
+                    np.abs(similarity_array + self.eps).sum() + self.eps # normalize the prediction
             if self.bias_sub:
                 pred += user_bias
         elif self.kind == "item":
@@ -70,7 +81,7 @@ class Recommender:
     # get the top recommendations
     def get_top_recomendations(self, item_id, user_id ,n=6):
         if self.kind == "user":
-            sim_row = self.sim_m[user_id - 1, :] 
+            sim_row = self.sim_m[user_id - 1, :].toarray().flatten()
             items_idxs = np.argsort(-sim_row)[1:n+1]
             similarities = sim_row[items_idxs]  
             return items_idxs + 1, similarities
@@ -88,7 +99,7 @@ class Recommender:
 #     bias_sub = trial.suggest_categorical("bias_sub", [False, True]) # Randomly subtracts the bias value or not
 
 #     # Instantiating the model
-#     # model = Recommender(n_users, n_movies, train_set, kind="item", k=k, bias_sub=bias_sub)
+#     model = Recommender(n_users, n_movies, train_set, kind="item", k=k, bias_sub=bias_sub)
    
 #     # Evaluating the performance
 #     _, test_mse = get_mse(model, train_set, test_set)
@@ -96,7 +107,7 @@ class Recommender:
 
 # study = optuna.create_study(direction="minimize")
 # # Here the parameter search effectively begins.
-# study.optimize(objective, n_trials=100)
+# study.optimize(objective, n_trials=1)
 
 def title2id(mapper_df, movie_title):
     return mapper_df.loc[mapper_df.title == movie_title, "title"].index.values[0]
@@ -109,7 +120,7 @@ def ids2title(mapper_df, ids_list):
 
 def print_recommendations(model, mapper, movie_title):
     item_id = title2id(mapper, movie_title)  # Convert movie title to item_id
-    user_id = 1  # Just an example user ID
+    user_id = 2  # Just an example user ID
     ids_list, similarities = model.get_top_recomendations(item_id, user_id)
     titles = ids2title(mapper, ids_list)
     for title, similarity in zip (titles, similarities):

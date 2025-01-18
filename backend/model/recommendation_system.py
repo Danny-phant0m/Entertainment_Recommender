@@ -170,7 +170,6 @@ def build_interactions_matrix(r_mat, n_users, n_items):
     # loops through the ratings data
     for _, userId, movieId, rating in r_mat.itertuples():
         iter_m[userId-1, movieId-1] = rating # fills the matrix with users ratings
-    
     return iter_m
 
 iter_m = build_interactions_matrix(ratings, n_users, n_movies) # call to create interaction matrix  
