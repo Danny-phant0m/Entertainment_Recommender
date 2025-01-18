@@ -16,7 +16,10 @@ from scipy.sparse import hstack
 from surprise import Dataset, Reader, SVD
 from scipy.sparse import csr_matrix
 from sklearn.preprocessing import OrdinalEncoder
+import scipy.sparse as sp 
+import itertools
 from scipy.sparse import csr_matrix
+import tables
 
 
 # Creating an instance of the OneHotEncoder
@@ -163,7 +166,20 @@ def get_mse(estimator, train_set, test_set):
 n_users = ratings['userId'].nunique()
 n_movies = ratings['movieId'].max()
 
-# create the interactions matrix of given ratings dataframe
+def store_dense_matrix(matrix, name):
+    with tables.open_file(f"../data/{name}.h5", mode="w") as file:
+        file.create_array("/", "dense_matrix", matrix)
+
+def spouter(A, B):
+    A_coo = A.tocoo()
+    B_coo = B.tocoo()
+
+    row_indices = np.repeat(B_coo.row, len(A_coo.data))
+    col_indices = (B_coo.col[:, None] * A.shape[1] + A_coo.col).ravel()
+    data = (B_coo.data[:, None] * A_coo.data).ravel()
+
+    return csr_matrix((data, (row_indices, col_indices)), shape=(B.shape[0], A.shape[1] * B.shape[1]))
+
 def build_interactions_matrix(r_mat, n_users, n_items):
     iter_m = np.zeros((n_users, n_items)) # create empty 0 matrix
     
@@ -187,17 +203,45 @@ def build_similarity_matrix(interactions_matrix, kind="user", eps=1e-9):
     norms = np.sqrt(similarity_matrix.diagonal()) + eps # calculates normalization factors
     # Initialize a new sparse matrix for normalized values
     normalized_matrix = similarity_matrix.copy()
+    norms2D = csr_matrix(norms[np.newaxis, :])
+    norms2D1 =  csr_matrix(norms[:, np.newaxis])
+    A = csr_matrix([[1, 2, 4]])
+    B = csr_matrix([[1], [2], [4]])
+
+    # Get the outer product
+    outer_product = spouter(A, B)
+    # print(norms2D)
+    # print(norms2D1)
+    print(outer_product)
+    # for row in range(similarity_matrix.shape[0]):
+    #     # Get the start and end of the non-zero elements for the row
+    #     start_idx = similarity_matrix.indptr[row]
+    #     end_idx = similarity_matrix.indptr[row + 1]
+        
+    #     start_idx1 = outer_product.indptr[row]
+    #     end_idx1 = outer_product.indptr[row + 1]
+        
+    #     # Loop through the column indices for this row
+    #     for col_idx, value in zip(similarity_matrix.indices[start_idx:end_idx], similarity_matrix.data[start_idx:end_idx]):
+    #         for col_idx1, value2 in zip(outer_product.indices[start_idx1:end_idx1], outer_product.data[start_idx1:end_idx1]):
+    #             if col_idx == col_idx1:
+    #                 print(value/value2)
+                    # Append the results (row, column, divided value)
+                    # rows.append(row)
+                    # cols.append(col_idx)
+                    # values.append(value / value2)
     # Iterate over rows to normalize
-    for i in range(similarity_matrix.shape[0]):
-        row_start = similarity_matrix.indptr[i]
-        row_end = similarity_matrix.indptr[i + 1]
-        normalized_matrix.data[row_start:row_end] /= norms[i]
-    # print(similarity_matrix)
-    # print(normalized_matrix)
+    # for i in range(similarity_matrix.shape[0]):
+    #     row_start = similarity_matrix.indptr[i]
+    #     row_end = similarity_matrix.indptr[i]
+    #     normalized_matrix.data[row_start:row_end] /= norms[i]
+    #print(normalized_matrix.data[0:126])
+    # print(similarity_matrix.indptr[i+1])
+    #print(normalized_matrix)
     return normalized_matrix # normalize the matrix
 
-# u_sim = build_similarity_matrix(iter_m, kind="user")
-# i_sim = build_similarity_matrix(iter_m, kind="item")
+u_sim = build_similarity_matrix(iter_m, kind="user")
+i_sim = build_similarity_matrix(iter_m, kind="item")
 # print(u_sim)
 # print(i_sim)
 

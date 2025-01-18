@@ -57,7 +57,7 @@ class Recommender:
                     #print(pred[user_id, :])
                 #pred[user_id, :] = np.array(similarity_array).dot(self.iter_m[k_users, :]) # gets predicted ratings
                 pred[user_id, :] /= \
-                    np.abs(similarity_array + self.eps).sum() + self.eps # normalize the prediction
+                    np.abs(np.array(similarity_array) + self.eps).sum() + self.eps # normalize the prediction
             if self.bias_sub:
                 pred += user_bias
         elif self.kind == "item":
@@ -120,16 +120,16 @@ def ids2title(mapper_df, ids_list):
 
 def print_recommendations(model, mapper, movie_title):
     item_id = title2id(mapper, movie_title)  # Convert movie title to item_id
-    user_id = 2  # Just an example user ID
+    user_id = 1  # Just an example user ID
     ids_list, similarities = model.get_top_recomendations(item_id, user_id)
     titles = ids2title(mapper, ids_list)
     for title, similarity in zip (titles, similarities):
         print(f"{similarity:.2f} -- {title}")
 
 # Create an instance of Recommender
-# recommender = Recommender(n_users, n_movies, train_set, kind="item")
+recommender = Recommender(n_users, n_movies, train_set, kind="item")
 recommender2 = Recommender(n_users, n_movies, train_set, kind="user")
 
 
-# print_recommendations(recommender, movies, "Batman Returns")
+print_recommendations(recommender, movies, "Batman Returns")
 print_recommendations(recommender2, movies, "Batman Returns")
