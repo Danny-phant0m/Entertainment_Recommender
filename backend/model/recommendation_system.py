@@ -19,7 +19,6 @@ from sklearn.preprocessing import OrdinalEncoder
 import scipy.sparse as sp 
 import itertools
 from scipy.sparse import csr_matrix
-import tables
 
 
 # Creating an instance of the OneHotEncoder
@@ -151,7 +150,7 @@ def build_predictions_df(preds_m, dataframe):
     preds_v = []
     for row_id, user_id, movie_id, _ in dataframe.itertuples():
         preds_v.append(preds_m[user_id-1, movie_id-1])
-    preds_df = pd.DataFrame(data={"user_id": dataframe.user_id, "movie_id": dataframe.movie_id, "rating": preds_v})
+    preds_df = pd.DataFrame(data={"user_id": dataframe.userId, "movie_id": dataframe.movieId, "rating": preds_v})
     return preds_df
 
 def get_mse(estimator, train_set, test_set):
@@ -164,21 +163,30 @@ def get_mse(estimator, train_set, test_set):
     return train_mse, test_mse
 
 n_users = ratings['userId'].nunique()
-n_movies = ratings['movieId'].max()
-
-def store_dense_matrix(matrix, name):
-    with tables.open_file(f"../data/{name}.h5", mode="w") as file:
-        file.create_array("/", "dense_matrix", matrix)
+n_movies = ratings['movieId'].nunique()
 
 def spouter(A, B):
     A_coo = A.tocoo()
     B_coo = B.tocoo()
 
-    row_indices = np.repeat(B_coo.row, len(A_coo.data))
-    col_indices = (B_coo.col[:, None] * A.shape[1] + A_coo.col).ravel()
-    data = (B_coo.data[:, None] * A_coo.data).ravel()
+    # Efficiently calculate row indices
+    row_indices = np.repeat(B_coo.row, A_coo.nnz)
+
+    # Efficiently calculate column indices
+    col_indices = (np.repeat(B_coo.col, A_coo.nnz) * A.shape[1] + np.tile(A_coo.col, B_coo.nnz))
+
+    # Efficiently calculate data
+    data = np.repeat(B_coo.data, A_coo.nnz) * np.tile(A_coo.data, B_coo.nnz)
 
     return csr_matrix((data, (row_indices, col_indices)), shape=(B.shape[0], A.shape[1] * B.shape[1]))
+
+
+def divide_csr(A, B):
+    if not A.shape == B.shape:
+        raise ValueError("Matrices must have the same shape.")
+    result_data = A.data / B[A.nonzero()].A.ravel()
+    return csr_matrix((result_data, A.indices, A.indptr), shape=A.shape)
+
 
 def build_interactions_matrix(r_mat, n_users, n_items):
     iter_m = np.zeros((n_users, n_items)) # create empty 0 matrix
@@ -193,7 +201,7 @@ iter_m.shape # return the dimensions of the interactions matrix
 
 # create the similrity matrix
 def build_similarity_matrix(interactions_matrix, kind="user", eps=1e-9):
-    interactions_matrix = csr_matrix(interactions_matrix)
+    #interactions_matrix = csr_matrix(interactions_matrix)
     # takes rows as user features
     if kind == "user":
         similarity_matrix = interactions_matrix.dot(interactions_matrix.T) # dot product to get similarity matrix
@@ -201,47 +209,11 @@ def build_similarity_matrix(interactions_matrix, kind="user", eps=1e-9):
     elif kind == "item":
         similarity_matrix = interactions_matrix.T.dot(interactions_matrix)
     norms = np.sqrt(similarity_matrix.diagonal()) + eps # calculates normalization factors
-    # Initialize a new sparse matrix for normalized values
-    normalized_matrix = similarity_matrix.copy()
-    norms2D = csr_matrix(norms[np.newaxis, :])
-    norms2D1 =  csr_matrix(norms[:, np.newaxis])
-    A = csr_matrix([[1, 2, 4]])
-    B = csr_matrix([[1], [2], [4]])
-
-    # Get the outer product
-    outer_product = spouter(A, B)
-    # print(norms2D)
-    # print(norms2D1)
-    print(outer_product)
-    # for row in range(similarity_matrix.shape[0]):
-    #     # Get the start and end of the non-zero elements for the row
-    #     start_idx = similarity_matrix.indptr[row]
-    #     end_idx = similarity_matrix.indptr[row + 1]
-        
-    #     start_idx1 = outer_product.indptr[row]
-    #     end_idx1 = outer_product.indptr[row + 1]
-        
-    #     # Loop through the column indices for this row
-    #     for col_idx, value in zip(similarity_matrix.indices[start_idx:end_idx], similarity_matrix.data[start_idx:end_idx]):
-    #         for col_idx1, value2 in zip(outer_product.indices[start_idx1:end_idx1], outer_product.data[start_idx1:end_idx1]):
-    #             if col_idx == col_idx1:
-    #                 print(value/value2)
-                    # Append the results (row, column, divided value)
-                    # rows.append(row)
-                    # cols.append(col_idx)
-                    # values.append(value / value2)
-    # Iterate over rows to normalize
-    # for i in range(similarity_matrix.shape[0]):
-    #     row_start = similarity_matrix.indptr[i]
-    #     row_end = similarity_matrix.indptr[i]
-    #     normalized_matrix.data[row_start:row_end] /= norms[i]
-    #print(normalized_matrix.data[0:126])
-    # print(similarity_matrix.indptr[i+1])
-    #print(normalized_matrix)
-    return normalized_matrix # normalize the matrix
-
+    # print(spouter(csr_matrix(norms[np.newaxis, :]) , csr_matrix(norms[:, np.newaxis])))
+    # return divide_csr(similarity_matrix, spouter(csr_matrix(norms[np.newaxis, :]) , csr_matrix(norms[:, np.newaxis]))).todense() # normalize the matrix
+    return similarity_matrix/ (norms[np.newaxis, :] * norms[:, np.newaxis])
 u_sim = build_similarity_matrix(iter_m, kind="user")
-i_sim = build_similarity_matrix(iter_m, kind="item")
+#i_sim = build_similarity_matrix(iter_m, kind="item")
 # print(u_sim)
 # print(i_sim)
 
