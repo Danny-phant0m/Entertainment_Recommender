@@ -36,13 +36,13 @@ movies = pd.read_csv('../data/movies_small.csv')[['movieId', 'title']]
 new_user_id = ratings['userId'].max() + 1
 new_ratings = pd.DataFrame({
     'userId': [new_user_id]*11, 
-    'movieId': [167746,153,27311,60979,79274,90603,103233,131739,136864,167746,95004],  # Movie IDs that the new user rates
+    'movieId': [167746,122892,27311,60979,79274,90603,103233,131739,136864,167746,95004],  # Movie IDs that the new user rates
     'rating': [4.5, 5 , 4.5 , 3 , 4 , 5 , 2 , 4.5 , 3 , 5 , 5]  # Simulated ratings
 })
 
 # Concatenate the new ratings with the original dataset
 ratings = pd.concat([ratings, new_ratings], ignore_index=True)
-ratings2 = pd.merge(ratings, movies, how='inner', on='movieId')
+ratings2 = pd.merge(ratings, movies, how='inner', on='movieId')# joing the ratings with the movies
 
 
 # Remove movies release years from titles
@@ -50,7 +50,7 @@ movies["title"] = movies["title"].apply(
     lambda title: re.sub(r"\(\d{4}\)", "", title).strip()
 )
 
-df = ratings2.pivot_table(index='title',columns='userId',values='rating').fillna(0)
+df = ratings2.pivot_table(index='title',columns='userId',values='rating').fillna(0)# create the user item matrix 
 df1 = df.copy()
 
 def recommend_movies(user, num_recommended_movies):
@@ -64,51 +64,56 @@ def recommend_movies(user, num_recommended_movies):
 
   recommended_movies = []
 
+  # loop through each movie movie the user has not rated
   for m in df[df[user] == 0].index.tolist():
 
-    index_df = df.index.tolist().index(m)
-    predicted_rating = df1.iloc[index_df, df1.columns.tolist().index(user)]
-    recommended_movies.append((m, predicted_rating))
+    index_df = df.index.tolist().index(m) # get the index of the movie m
+    predicted_rating = df1.iloc[index_df, df1.columns.tolist().index(user)]# gets predicted rations for movie m from df1
+    recommended_movies.append((m, predicted_rating)) # adds the movie and its rating to the array
 
-  sorted_rm = sorted(recommended_movies, key=lambda x:x[1], reverse=True)
+  sorted_rm = sorted(recommended_movies, key=lambda x:x[1], reverse=True) # sorte the recommended movies in dec order
   
   print('The list of the Recommended Movies \n')
-  rank = 1
+  rank = 1 # keeps track of the position of the recommend movies
   for recommended_movie in sorted_rm[:num_recommended_movies]:
     
-    print('{}: {} - predicted rating:{}'.format(rank, recommended_movie[0], recommended_movie[1]))
+    print('{}: {} - predicted rating:{}'.format(rank, recommended_movie[0], recommended_movie[1])) # prints out the recommended movies and the position of its ranking
     rank = rank + 1
 
 def movie_recommender(user, num_neighbors, num_recommendation):
   
   number_neighbors = num_neighbors
 
-  knn = NearestNeighbors(metric='cosine', algorithm='brute')
-  knn.fit(df.values)
-  distances, indices = knn.kneighbors(df.values, n_neighbors=number_neighbors)
+  knn = NearestNeighbors(metric='cosine', algorithm='brute') # initilize knn with cosine simularity
+  knn.fit(df.values) # fit the data into the instance
+  distances, indices = knn.kneighbors(df.values, n_neighbors=number_neighbors)# retrive the nearest neighbours for each movie
 
   user_index = df.columns.tolist().index(user)
 
+  # iterate over the movies to calculate predicted ratings for the user
   for m,t in list(enumerate(df.index)):
     if df.iloc[m, user_index] == 0:
-      sim_movies = indices[m].tolist()
+      sim_movies = indices[m].tolist() # get the index for the simiular movies
       movie_distances = distances[m].tolist()
     
+      # remove the movie if it is in sim_movies
       if m in sim_movies:
-        id_movie = sim_movies.index(m)
-        sim_movies.remove(m)
-        movie_distances.pop(id_movie) 
+        id_movie = sim_movies.index(m) # get the index of the move
+        sim_movies.remove(m)# remove the movie 
+        movie_distances.pop(id_movie) # Remove the movie distance
 
       else:
         sim_movies = sim_movies[:num_neighbors-1]
         movie_distances = movie_distances[:num_neighbors-1]
-           
+      
+      # convert the distances to similarity
       movie_similarity = [1-x for x in movie_distances]
       movie_similarity_copy = movie_similarity.copy()
       nominator = 0
 
       for s in range(0, len(movie_similarity)):
-        if df.iloc[sim_movies[s], user_index] == 0:
+        # makes sure to only make predictions for movies the user has not rated
+        if df.iloc[sim_movies[s], user_index] == 0: 
           if len(movie_similarity_copy) == (number_neighbors - 1):
             movie_similarity_copy.pop(s)
           
@@ -127,8 +132,8 @@ def movie_recommender(user, num_neighbors, num_recommendation):
       else:
         predicted_r = 0
         
-      df1.iloc[m,user_index] = predicted_r
-  recommend_movies(user,num_recommendation)
+      df1.iloc[m,user_index] = predicted_r # save predicted ratings in a copy of the matrix
+  recommend_movies(user,num_recommendation)# call the function to print movie recommendations
 
 
 movie_recommender(new_user_id, 10, 10)
