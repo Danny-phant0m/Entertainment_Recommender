@@ -19,203 +19,135 @@ from sklearn.preprocessing import OrdinalEncoder
 import scipy.sparse as sp 
 import itertools
 from scipy.sparse import csr_matrix
+from surprise import KNNWithMeans
+from surprise.model_selection import GridSearchCV
 
 
 # Creating an instance of the OneHotEncoder
 encoder = OneHotEncoder()
 
 #movies = pd.read_csv('../data/TMDB_movie_dataset_v11.csv')
-ratings = pd.read_csv('../data/ratings_small.csv')[['userId', 'movieId', 'rating']]
 # ratings = pd.read_csv('../data/ratings_small.csv')
+
+ratings = pd.read_csv('../data/ratings_small.csv')[['userId', 'movieId', 'rating']]
 movies = pd.read_csv('../data/movies_small.csv')[['movieId', 'title']]
 
-# ratings = pd.read_csv(
-#     "../data/u.data",
-#     sep="\t", # this is a tab separated data
-#     names=["user_id", "movie_id", "rating", "timestamp"], # the columns names
-#     usecols=["user_id", "movie_id", "rating"], # we do not need the timestamp column
-#     low_memory=False
-# )
+# Add a new user (new user ID is last user ID + 1)
+new_user_id = ratings['userId'].max() + 1
+new_ratings = pd.DataFrame({
+    'userId': [new_user_id]*11, 
+    'movieId': [167746,153,27311,60979,79274,90603,103233,131739,136864,167746,95004],  # Movie IDs that the new user rates
+    'rating': [4.5, 5 , 4.5 , 3 , 4 , 5 , 2 , 4.5 , 3 , 5 , 5]  # Simulated ratings
+})
 
-# movies_mapper_cols = [
-#     "movie_id", 
-#     "movie_title", 
-#     "release_date", 
-#     "video_release_date", 
-#     "IMDb_URL", 
-#     "unknown",
-#     "Action",
-#     "Adventure",
-#     "Animation",
-#     "Childrens",
-#     "Comedy",
-#     "Crime",
-#     "Documentary",
-#     "Drama",
-#     "Fantasy",
-#     "Film_Noir",
-#     "Horror",
-#     "Musical",
-#     "Mystery",
-#     "Romance",
-#     "Sci_Fi",
-#     "Thriller",
-#     "War",
-#     "Western" 
-# ]
-# movies_mapper = pd.read_csv(
-#     "../data/u.item",
-#     sep="|",
-#     encoding="latin",
-#     names=movies_mapper_cols,
-#     usecols=["movie_id", "movie_title"], # we only need these columns
-#     index_col="movie_id"
-# )
+# Concatenate the new ratings with the original dataset
+ratings = pd.concat([ratings, new_ratings], ignore_index=True)
+ratings2 = pd.merge(ratings, movies, how='inner', on='movieId')
+
+
 # Remove movies release years from titles
 movies["title"] = movies["title"].apply(
     lambda title: re.sub(r"\(\d{4}\)", "", title).strip()
 )
 
-test_perc = 0.2 # set percentage of test data
+df = ratings2.pivot_table(index='title',columns='userId',values='rating').fillna(0)
+df1 = df.copy()
 
-# Initialize the train and test dataframes.
-train_set, test_set = pd.DataFrame(), pd.DataFrame()
+def recommend_movies(user, num_recommended_movies):
 
-# Add a new user (new user ID is last user ID + 1)
-# new_user_id = ratings['userId'].max() + 1
-# new_ratings = pd.DataFrame({
-#     'userId': [new_user_id]*11, 
-#     'movieId': [131739, 190017,156000,124867,129826,136864,138104,143890,166455,168420,161354],  # Movie IDs that the new user rates
-#     'rating': [4.5, 5,4.5,3,4,5,2,4.5,3,5,5]  # Simulated ratings
-# })
+  print('The list of the Movies {} Has Watched \n'.format(user))
 
-# # Concatenate the new ratings with the original dataset
-# ratings = pd.concat([ratings, new_ratings], ignore_index=True)
+  for m in df[df[user] > 0][user].index.tolist():
+    print(m)
+  
+  print('\n')
 
-# # Load MovieLens dataset and split into train/test sets
-# reader = Reader(rating_scale=(1, 5))
-# data = Dataset.load_from_df(ratings, reader)
-# train_set, test_set = train_test_split(data, test_size=0.2)
+  recommended_movies = []
 
-# # Instantiate the SVD model
-# svd = SVD()
+  for m in df[df[user] == 0].index.tolist():
 
-# # Train the model on the training set
-# svd.fit(train_set)
+    index_df = df.index.tolist().index(m)
+    predicted_rating = df1.iloc[index_df, df1.columns.tolist().index(user)]
+    recommended_movies.append((m, predicted_rating))
 
-# # Function to recommend movies based on a given item_id
-# def recommend_based_on_item(user_id, top_n=10):
-#     predictions = []
-#     # Loop through all users and predict the rating for the item
-#     for item_id in ratings['movieId'].unique():
-#         predicted_rating = svd.predict(user_id, item_id).est
-#         predictions.append((item_id, predicted_rating))
-
-#     # Sort predictions by rating in descending order and get top N recommendations
-#     predictions.sort(key=lambda x: x[1], reverse=True)
-#     top_predictions = predictions[:top_n]
-
-#     # Return the top N recommended users and their predicted ratings
-#     return top_predictions
-
-# # Example: Get recommendations based on a specific movie (item_id = 302)
-# top_n_recommendations = recommend_based_on_item(new_user_id)
-
-# # Print the recommendations
-# for item_id, predicted_rating in top_n_recommendations:
-#     print(f"User {new_user_id} has a predicted rating of {predicted_rating} for item {item_id}")
-
-
-# Check each user.
-for userId in ratings.userId.unique(): 
-    user_df = ratings[ratings.userId == userId].sample(
-        frac=1,
-        random_state=42
-    ) # select only samples of the actual user and shuffle the resulting dataframe
+  sorted_rm = sorted(recommended_movies, key=lambda x:x[1], reverse=True)
+  
+  print('The list of the Recommended Movies \n')
+  rank = 1
+  for recommended_movie in sorted_rm[:num_recommended_movies]:
     
-    n_entries = len(user_df) # get the total number of ratings
-    n_test = int(round(test_perc * n_entries))# gets about 20% of the number of ratings for the test set
+    print('{}: {} - predicted rating:{}'.format(rank, recommended_movie[0], recommended_movie[1]))
+    rank = rank + 1
+
+def movie_recommender(user, num_neighbors, num_recommendation):
+  
+  number_neighbors = num_neighbors
+
+  knn = NearestNeighbors(metric='cosine', algorithm='brute')
+  knn.fit(df.values)
+  distances, indices = knn.kneighbors(df.values, n_neighbors=number_neighbors)
+
+  user_index = df.columns.tolist().index(user)
+
+  for m,t in list(enumerate(df.index)):
+    if df.iloc[m, user_index] == 0:
+      sim_movies = indices[m].tolist()
+      movie_distances = distances[m].tolist()
     
-    # joins the train and test set for ratings to the users of global test/train set
-    test_set = pd.concat((test_set, user_df.tail(n_test)))  
-    train_set = pd.concat((train_set, user_df.head(n_entries - n_test)))
+      if m in sim_movies:
+        id_movie = sim_movies.index(m)
+        sim_movies.remove(m)
+        movie_distances.pop(id_movie) 
 
-# shuffles the test/train set and resest the index
-train_set = train_set.sample(frac=1).reset_index(drop=True)
-test_set = test_set.sample(frac=1).reset_index(drop=True)
+      else:
+        sim_movies = sim_movies[:num_neighbors-1]
+        movie_distances = movie_distances[:num_neighbors-1]
+           
+      movie_similarity = [1-x for x in movie_distances]
+      movie_similarity_copy = movie_similarity.copy()
+      nominator = 0
 
-train_set.shape, test_set.shape
+      for s in range(0, len(movie_similarity)):
+        if df.iloc[sim_movies[s], user_index] == 0:
+          if len(movie_similarity_copy) == (number_neighbors - 1):
+            movie_similarity_copy.pop(s)
+          
+          else:
+            movie_similarity_copy.pop(s-(len(movie_similarity)-len(movie_similarity_copy)))
+        else:
+          nominator = nominator + movie_similarity[s]*df.iloc[sim_movies[s],user_index]
+          
+      if len(movie_similarity_copy) > 0:
+        if sum(movie_similarity_copy) > 0:
+          predicted_r = nominator/sum(movie_similarity_copy)
+        
+        else:
+          predicted_r = 0
 
-def build_predictions_df(preds_m, dataframe):
-    preds_v = []
-    for row_id, user_id, movie_id, _ in dataframe.itertuples():
-        preds_v.append(preds_m[user_id-1, movie_id-1])
-    preds_df = pd.DataFrame(data={"user_id": dataframe.userId, "movie_id": dataframe.movieId, "rating": preds_v})
-    return preds_df
+      else:
+        predicted_r = 0
+        
+      df1.iloc[m,user_index] = predicted_r
+  recommend_movies(user,num_recommendation)
 
-def get_mse(estimator, train_set, test_set):
-    train_preds = build_predictions_df(estimator.predictions, train_set)
-    test_preds = build_predictions_df(estimator.predictions, test_set)
+
+movie_recommender(new_user_id, 10, 10)
+
+# def build_predictions_df(preds_m, dataframe):
+#     preds_v = []
+#     for row_id, userId, movieId, _ in dataframe.itertuples():
+#         preds_v.append(preds_m[userId-1, movieId-1])
+#     preds_df = pd.DataFrame(data={"userId": dataframe.userId, "movieId": dataframe.movieId, "rating": preds_v})
+#     return preds_df
+
+# def get_mse(estimator, train_set, test_set):
+#     train_preds = build_predictions_df(estimator.predictions, train_set)
+#     test_preds = build_predictions_df(estimator.predictions, test_set)
     
-    train_mse = mean_squared_error(train_set.rating, train_preds.rating)
-    test_mse = mean_squared_error(test_set.rating, test_preds.rating)
+#     train_mse = mean_squared_error(train_set.rating, train_preds.rating)
+#     test_mse = mean_squared_error(test_set.rating, test_preds.rating)
     
-    return train_mse, test_mse
-
-n_users = ratings['userId'].nunique()
-n_movies = ratings['movieId'].nunique()
-
-def spouter(A, B):
-    A_coo = A.tocoo()
-    B_coo = B.tocoo()
-
-    # Efficiently calculate row indices
-    row_indices = np.repeat(B_coo.row, A_coo.nnz)
-
-    # Efficiently calculate column indices
-    col_indices = (np.repeat(B_coo.col, A_coo.nnz) * A.shape[1] + np.tile(A_coo.col, B_coo.nnz))
-
-    # Efficiently calculate data
-    data = np.repeat(B_coo.data, A_coo.nnz) * np.tile(A_coo.data, B_coo.nnz)
-
-    return csr_matrix((data, (row_indices, col_indices)), shape=(B.shape[0], A.shape[1] * B.shape[1]))
-
-
-def divide_csr(A, B):
-    if not A.shape == B.shape:
-        raise ValueError("Matrices must have the same shape.")
-    result_data = A.data / B[A.nonzero()].A.ravel()
-    return csr_matrix((result_data, A.indices, A.indptr), shape=A.shape)
-
-
-def build_interactions_matrix(r_mat, n_users, n_items):
-    iter_m = np.zeros((n_users, n_items)) # create empty 0 matrix
-    
-    # loops through the ratings data
-    for _, userId, movieId, rating in r_mat.itertuples():
-        iter_m[userId-1, movieId-1] = rating # fills the matrix with users ratings
-    return iter_m
-
-iter_m = build_interactions_matrix(ratings, n_users, n_movies) # call to create interaction matrix  
-iter_m.shape # return the dimensions of the interactions matrix
-
-# create the similrity matrix
-def build_similarity_matrix(interactions_matrix, kind="user", eps=1e-9):
-    #interactions_matrix = csr_matrix(interactions_matrix)
-    # takes rows as user features
-    if kind == "user":
-        similarity_matrix = interactions_matrix.dot(interactions_matrix.T) # dot product to get similarity matrix
-    # takes columns as item features
-    elif kind == "item":
-        similarity_matrix = interactions_matrix.T.dot(interactions_matrix)
-    norms = np.sqrt(similarity_matrix.diagonal()) + eps # calculates normalization factors
-    # print(spouter(csr_matrix(norms[np.newaxis, :]) , csr_matrix(norms[:, np.newaxis])))
-    # return divide_csr(similarity_matrix, spouter(csr_matrix(norms[np.newaxis, :]) , csr_matrix(norms[:, np.newaxis]))).todense() # normalize the matrix
-    return similarity_matrix/ (norms[np.newaxis, :] * norms[:, np.newaxis])
-u_sim = build_similarity_matrix(iter_m, kind="user")
-#i_sim = build_similarity_matrix(iter_m, kind="item")
-# print(u_sim)
-# print(i_sim)
+#     return train_mse, test_mse
 
 # # Removing duplicate rows
 # movies.drop_duplicates(inplace=True)
