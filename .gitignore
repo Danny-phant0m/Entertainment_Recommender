@@ -16,4 +16,6 @@ backend/data/ratings_small.csv
 backend/data/movies_small.csv
 backend/data/TMDB_all_movies.csv
 
+# cache
 backend/model/__pycache__
+backend/server/server/__pycache__
