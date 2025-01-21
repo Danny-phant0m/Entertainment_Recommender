@@ -44,22 +44,61 @@ new_ratings = pd.DataFrame({
 # Concatenate the new ratings with the original dataset
 ratings = pd.concat([ratings, new_ratings], ignore_index=True)
 ratings2 = pd.merge(ratings, movies, how='inner', on='movieId')# joing the ratings with the movies
-df = ratings2.pivot_table(index='title',columns='userId',values='rating').fillna(0)# create the user item matrix 
+df = ratings2.pivot_table(index='title',columns='userId',values='rating').fillna(0) # create the user item matrix 
 df1 = df.copy()
 
-# # mean centered ratings to bias
-# ratings_centred = df.subtract(df.mean(axis=0), axis='columns')
-
-# # calculate the adjusted cosine 
-# items_similarity_matrix = ratings_centred.corr()
-
-
+# df = movies.merge(ratings, on = 'movieId')
+userRatings = ratings2.pivot_table(index = ['userId'], columns = ['title'],
+                            values = 'rating')
+user_similarity_matrix = userRatings.T.corr(method = 'pearson')
 
 # Remove movies release years from titles
 movies["title"] = movies["title"].apply(
     lambda title: re.sub(r"\(\d{4}\)", "", title).strip()
 )
 
+def user_recommend_movie(u, k, threshold, num_recommendations):
+    # get movies that target user has watched and rated
+    target_watched = userRatings[userRatings.index == u].dropna(axis = 1, how = 'all')
+    # remove target user so that they are not amongst one of the similar users.
+    user_similarity_matrix.drop(index = u)
+    # Return the top k (10) similar users
+    k_Neighbours = user_similarity_matrix[user_similarity_matrix[u] > threshold][u].sort_values(ascending = False)[:k]
+    target_not_watched = userRatings[userRatings.index == u].dropna(axis = 1, how = 'all')
+    target_not_watched = userRatings[userRatings.index.isin(k_Neighbours.index)].dropna(axis = 1, how = 'all')
+    # remove movies that the target user has watched.
+    target_not_watched.drop(target_watched.columns, axis = 1, inplace = True, errors = 'ignore')
+    
+    movies = target_not_watched.columns
+    recommended_movie_list = []
+    predicted_rating_list = []
+    # calcualte mean rating for user u
+    mu_u = userRatings[userRatings.index == u].T.mean()[u]
+
+    for j in movies:
+        movie_ratings = target_not_watched
+        rating_sum = 0
+        similarity_sum = 0
+        for v in movie_ratings.index :
+            # Get rating user v gave to movie j
+            rating = movie_ratings.loc[v][j]
+            # Get Pearson Similarity score between user u and user v
+            similarity = user_similarity_matrix[u][v]
+            if pd.isna(rating) == False:
+                # calculate mean rating of user v
+                mu_v = userRatings[userRatings.index == v].T.mean()[v]
+                # calculate mean-centered rating
+                mean_centered_rating = rating - mu_v
+                rating_sum = rating_sum + similarity*mean_centered_rating
+                similarity_sum = similarity_sum + similarity
+        # Predict rating
+        prediction_rating = mu_u + rating_sum/similarity_sum
+        recommended_movie_list.append(j)
+        predicted_rating_list.append(prediction_rating)
+
+    results = pd.DataFrame(list(zip(recommended_movie_list, predicted_rating_list)), 
+                          columns = ['Movie', 'Predicted_Rating']).sort_values('Predicted_Rating', ascending = False).head(num_recommendations)
+    return results
 
 def recommend_movies(user, num_recommended_movies):
 
@@ -146,8 +185,9 @@ def movie_recommender(user, num_neighbors, num_recommendation):
 
   recommend_movies(user,num_recommendation)# call the function to print movie recommendations
 
-
 movie_recommender(new_user_id, 10, 10)
+recommend = user_recommend_movie(u=new_user_id, k=10, threshold=0.5, num_recommendations=5)
+print(recommend)
 
 # def build_predictions_df(preds_m, dataframe):
 #     preds_v = []
