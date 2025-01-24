@@ -7,16 +7,11 @@ import Typography from '@mui/material/Typography';
 import StarIcon from '@mui/icons-material/Star';
 
 const labels = {
-    0.5: 'Useless',
-    1: 'Useless+',
-    1.5: 'Poor',
-    2: 'Poor+',
-    2.5: 'Ok',
-    3: 'Ok+',
-    3.5: 'Good',
-    4: 'Good+',
-    4.5: 'Excellent',
-    5: 'Excellent+',
+    1: 'Useless',
+    2: 'Poor',
+    3: 'Ok',
+    4: 'Good',
+    5: 'Excellent',
   };
   
   function getLabelText(value) {
@@ -84,7 +79,25 @@ const MovieCard = () => {
           <p>{currentMovie.overview}</p>
         </div>
       )}
-
+        <Typography
+            variant="h3"
+            sx={{
+            fontFamily: "'Roboto', sans-serif",
+            fontSize: 30,
+            fontWeight: 'bold',
+            color: '# ',
+            textAlign: 'center',
+            position: "absolute",
+            top: "1%",
+            width: "30%",
+            backgroundColor: 'rgba(0, 0, 0, 0.4)', 
+            padding: '10px',
+            borderRadius: '25px',
+            textShadow: "1px 1px 5px rgba(0, 0, 0, 0.8)",
+            }}
+        >
+        Entertainment Recommender
+      </Typography>
       <IconButton
         onClick={handleNextMovie}
         style={{
@@ -109,7 +122,7 @@ const MovieCard = () => {
       <Rating
         name="hover-feedback"
         value={value}
-        precision={0.5}
+        precision={1}
         getLabelText={getLabelText}
         onChange={(event, newValue) => {
           setValue(newValue);
