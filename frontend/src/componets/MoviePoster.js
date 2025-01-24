@@ -56,7 +56,17 @@ const MovieCard = () => {
   };
 
   return (
-    <div style={{ backgroundColor: "black", height: "100vh", width: "100vw" }}>
+    <div style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        height: "100vh",
+        width: "100vw",
+        backgroundImage: `url(https://image.tmdb.org/t/p/original${currentMovie?.backdrop_path})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        zIndex: -1,
+      }}>
         <Fade in={fadeIn} timeout={500}>
         <div
             style={{
