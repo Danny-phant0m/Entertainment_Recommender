@@ -1,10 +1,33 @@
 import React, { useEffect, useState } from "react";
 import IconButton from "@mui/material/IconButton";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import Box from '@mui/material/Box';
+import Rating from '@mui/material/Rating';
+import Typography from '@mui/material/Typography';
+import StarIcon from '@mui/icons-material/Star';
+
+const labels = {
+    0.5: 'Useless',
+    1: 'Useless+',
+    1.5: 'Poor',
+    2: 'Poor+',
+    2.5: 'Ok',
+    3: 'Ok+',
+    3.5: 'Good',
+    4: 'Good+',
+    4.5: 'Excellent',
+    5: 'Excellent+',
+  };
+  
+  function getLabelText(value) {
+    return `${value} Star${value !== 1 ? 's' : ''}, ${labels[value]}`;
+  }
 
 const MovieCard = () => {
   const [movies, setMovies] = useState([]);
   const [currentMovieIndex, setCurrentMovieIndex] = useState(0);
+  const [value, setValue] = React.useState(2);
+  const [hover, setHover] = React.useState(-1);
 
   useEffect(() => {
     const options = {
@@ -31,10 +54,6 @@ const MovieCard = () => {
     );
   };
 
-  useEffect(() => {
-    const image = new Image();
-    image.src = `https://image.tmdb.org/t/p/original${currentMovie?.backdrop_path}`;
-  }, [currentMovie]);
 
   return (
     <div
@@ -78,6 +97,33 @@ const MovieCard = () => {
       >
         <ArrowForwardIosIcon style={{ color: "white", fontSize: "30px" }} />
       </IconButton>
+      <Box sx={{
+        position: "fixed",
+        bottom: '20%', 
+        right: '10%',
+        '& > legend': { mt: 2 },
+        backgroundColor: "rgba(0, 0, 0, 0.6)",
+        borderRadius: "25px",
+        padding: "20px",
+      }}>
+      <Rating
+        name="hover-feedback"
+        value={value}
+        precision={0.5}
+        getLabelText={getLabelText}
+        onChange={(event, newValue) => {
+          setValue(newValue);
+        }}
+        onChangeActive={(event, newHover) => {
+          setHover(newHover);
+        }}
+        emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
+        size="large"
+      />
+      {value !== null && (
+        <Box sx={{ ml: 2 }}>{labels[hover !== -1 ? hover : value]}</Box>
+      )}
+    </Box>
     </div>
   );
 };
