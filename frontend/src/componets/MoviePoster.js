@@ -56,100 +56,103 @@ const MovieCard = () => {
   };
 
   return (
-    <Fade in={fadeIn} timeout={500}>
-      <div
-        style={{
-          height: "100vh",
-          width: "100vw",
-          backgroundImage: `url(https://image.tmdb.org/t/p/original${currentMovie?.backdrop_path})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          position: "relative",
-          color: "white",
-          textShadow: "1px 1px 5px rgba(0, 0, 0, 0.8)",
-        }}
-      >
-        {currentMovie && (
-          <div
+    <div style={{ backgroundColor: "black", height: "100vh", width: "100vw" }}>
+        <Fade in={fadeIn} timeout={500}>
+        <div
             style={{
-              position: "absolute",
-              bottom: "5%",
-              left: "1%",
-              right: "60%",
-              padding: "20px",
-              background: "rgba(0, 0, 0, 0.6)",
-              borderRadius: "25px",
-            }}
-          >
-            <h1>{currentMovie.title}</h1>
-            <p>{currentMovie.overview}</p>
-          </div>
-        )}
-
-        <Typography
-            variant="h3"
-            sx={{
-              fontFamily: "'Roboto', sans-serif",
-              fontSize: 30,
-              fontWeight: 'bold',
-              color: '#fff',
-              textAlign: 'center',
-              position: "absolute",
-              top: "1%",
-              width: "30%",
-              backgroundColor: 'rgba(0, 0, 0, 0.4)', 
-              padding: '10px',
-              borderRadius: '25px',
-              textShadow: "1px 1px 5px rgba(0, 0, 0, 0.8)",
+            height: "100vh",
+            width: "100vw",
+            backgroundImage: `url(https://image.tmdb.org/t/p/original${currentMovie?.backdrop_path})`,
+            backgroundColor: 'black',
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            position: "relative",
+            color: "white",
+            textShadow: "1px 1px 5px rgba(0, 0, 0, 0.8)",
             }}
         >
-          Entertainment Recommender
-        </Typography>
+            {currentMovie && (
+            <div
+                style={{
+                position: "absolute",
+                bottom: "5%",
+                left: "1%",
+                right: "60%",
+                padding: "20px",
+                background: "rgba(0, 0, 0, 0.6)",
+                borderRadius: "25px",
+                }}
+            >
+                <h1>{currentMovie.title}</h1>
+                <p>{currentMovie.overview}</p>
+            </div>
+            )}
 
-        <IconButton
-          onClick={handleNextMovie}
-          style={{
-            position: "absolute",
-            top: "50%",
-            right: "5%",
-            transform: "translateY(-50%)",
+            <Typography
+                variant="h3"
+                sx={{
+                fontFamily: "'Roboto', sans-serif",
+                fontSize: 30,
+                fontWeight: 'bold',
+                color: '#fff',
+                textAlign: 'center',
+                position: "absolute",
+                top: "1%",
+                width: "30%",
+                backgroundColor: 'rgba(0, 0, 0, 0.4)', 
+                padding: '10px',
+                borderRadius: '25px',
+                textShadow: "1px 1px 5px rgba(0, 0, 0, 0.8)",
+                }}
+            >
+            Entertainment Recommender
+            </Typography>
+
+            <IconButton
+            onClick={handleNextMovie}
+            style={{
+                position: "absolute",
+                top: "50%",
+                right: "5%",
+                transform: "translateY(-50%)",
+                backgroundColor: "rgba(0, 0, 0, 0.6)",
+            }}
+            >
+            <ArrowForwardIosIcon style={{ color: "white", fontSize: "30px" }} />
+            </IconButton>
+
+            <Box sx={{
+            position: "fixed",
+            bottom: '20%', 
+            right: '10%',
+            '& > legend': { mt: 2 },
             backgroundColor: "rgba(0, 0, 0, 0.6)",
-          }}
-        >
-          <ArrowForwardIosIcon style={{ color: "white", fontSize: "30px" }} />
-        </IconButton>
-
-        <Box sx={{
-          position: "fixed",
-          bottom: '20%', 
-          right: '10%',
-          '& > legend': { mt: 2 },
-          backgroundColor: "rgba(0, 0, 0, 0.6)",
-          borderRadius: "25px",
-          padding: "20px",
-        }}>
-          <Typography component="legend">Rate the Movie</Typography>
-          <Rating
-            name="hover-feedback"
-            value={value}
-            precision={1}
-            getLabelText={getLabelText}
-            onChange={(event, newValue) => {
-              setValue(newValue);
-            }}
-            onChangeActive={(event, newHover) => {
-              setHover(newHover);
-            }}
-            emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
-            size="large"
-            defaultValue={0}
-          />
-          {value !== null && (
-            <Box sx={{ ml: 2 }}>{labels[hover !== -1 ? hover : value]}</Box>
-          )}
-        </Box>
-      </div>
-    </Fade>
+            borderRadius: "25px",
+            padding: "20px",
+            }}>
+            <Typography component="legend">Rate the Movie</Typography>
+            <Rating
+                name="hover-feedback"
+                value={value}
+                precision={1}
+                getLabelText={getLabelText}
+                onChange={(event, newValue) => {
+                setValue(newValue);
+                }}
+                onChangeActive={(event, newHover) => {
+                setHover(newHover);
+                }}
+                emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
+                size="large"
+                defaultValue={0}
+            />
+            {value !== null && (
+                <Box sx={{ ml: 2 }}>{labels[hover !== -1 ? hover : value]}</Box>
+            )}
+            </Box>
+        </div>
+        </Fade>
+    </div>
   );
 };
 
