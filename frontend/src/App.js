@@ -1,13 +1,9 @@
-import logo from './logo.svg';
 import './App.css';
+import MovieCard from './componets/MoviePoster';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-       
-      </header>
-    </div>
+       <MovieCard/>
   );
 }
 
