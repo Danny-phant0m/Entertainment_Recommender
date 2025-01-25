@@ -23,7 +23,7 @@ function getLabelText(value) {
 const MovieCard = () => {
   const [movies, setMovies] = useState([]);
   const [currentMovieIndex, setCurrentMovieIndex] = useState(0);
-  const [value, setValue] = React.useState(1);
+  const [value, setValue] = React.useState(5);
   const [hover, setHover] = React.useState(-1);
   const [fadeIn, setFadeIn] = useState(true); // For fade effect
   const [castNames, setCastNames] = useState([]);
@@ -72,6 +72,26 @@ const MovieCard = () => {
       );
       setFadeIn(true); // Trigger fade-in
     }, 500); // Match fade duration
+
+    const ratingData = {
+        movieId: currentMovie.id, // Get the current movie's ID
+        rating: value, // Get the user's rating
+      };
+    
+      fetch("https://your-backend-api.com/ratings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(ratingData),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("Rating submitted successfully:", data);
+        })
+        .catch((error) => {
+          console.error("Error submitting rating:", error);
+        });
   };
 
   return (
