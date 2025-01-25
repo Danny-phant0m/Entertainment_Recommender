@@ -78,7 +78,7 @@ const MovieCard = () => {
         rating: value, // Get the user's rating
       };
     
-      fetch("https://your-backend-api.com/ratings", {
+      fetch("http://localhost:8000/movies/submit-rating/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
