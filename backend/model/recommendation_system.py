@@ -18,40 +18,12 @@ from scipy.sparse import csr_matrix
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import LabelEncoder
 
-# Creating an instance of the OneHotEncoder
-encoder = OneHotEncoder()
+def user_recommend_movie(u, k, threshold, num_recommendations,ratings2):
+    
+    userRatings = ratings2.pivot_table(index = ['userId'], columns = ['title'],
+                                values = 'rating')
+    user_similarity_matrix = userRatings.T.corr(method = 'pearson')
 
-movies_large = pd.read_csv('../data/TMDB_all_movies.csv')
-# ratings = pd.read_csv('../data/ratings_small.csv')
-
-ratings = pd.read_csv('../data/ratings_small.csv')[['userId', 'movieId', 'rating']]
-movies = pd.read_csv('../data/movies_small.csv')[['movieId', 'title']]
-
-# Add a new user (new user ID is last user ID + 1)
-new_user_id = ratings['userId'].max() + 1
-new_ratings = pd.DataFrame({
-    'userId': [new_user_id]*11, 
-    'movieId': [167746,122892,27311,60979,79274,90603,103233,131739,136864,167746,95004],  # Movie IDs that the new user rates
-    'rating': [4.5, 5 , 4.5 , 3 , 4 , 5 , 2 , 4.5 , 3 , 5 , 5]  # Simulated ratings
-})
-
-# Concatenate the new ratings with the original dataset
-ratings = pd.concat([ratings, new_ratings], ignore_index=True)
-ratings2 = pd.merge(ratings, movies, how='inner', on='movieId')# joing the ratings with the movies
-df = ratings2.pivot_table(index='title',columns='userId',values='rating').fillna(0) # create the user item matrix 
-df1 = df.copy()
-
-# df = movies.merge(ratings, on = 'movieId')
-userRatings = ratings2.pivot_table(index = ['userId'], columns = ['title'],
-                            values = 'rating')
-user_similarity_matrix = userRatings.T.corr(method = 'pearson')
-
-# Remove movies release years from titles
-movies["title"] = movies["title"].apply(
-    lambda title: re.sub(r"\(\d{4}\)", "", title).strip()
-)
-
-def user_recommend_movie(u, k, threshold, num_recommendations):
     # get movies that target user has watched and rated
     target_watched = userRatings[userRatings.index == u].dropna(axis = 1, how = 'all')
     # remove target user so that they are not amongst one of the similar users.
@@ -94,7 +66,7 @@ def user_recommend_movie(u, k, threshold, num_recommendations):
                           columns = ['Movie', 'Predicted_Rating']).sort_values('Predicted_Rating', ascending = False).head(num_recommendations)
     return results
 
-def recommend_movies(user, num_recommended_movies):
+def recommend_movies(user, num_recommended_movies,df,df1):
 
   print('The list of the Movies {} Has Watched \n'.format(user))
 
@@ -120,8 +92,12 @@ def recommend_movies(user, num_recommended_movies):
     
     print('{}: {} - predicted rating:{}'.format(rank, recommended_movie[0], recommended_movie[1])) # prints out the recommended movies and the position of its ranking
     rank = rank + 1
+  return sorted_rm
 
-def movie_recommender(user, num_neighbors, num_recommendation):
+def movie_recommender(user, num_neighbors, num_recommendation,ratings2):
+  # joing the ratings with the movies
+  df = ratings2.pivot_table(index='title',columns='userId',values='rating').fillna(0) # create the user item matrix 
+  df1 = df.copy()
   
   number_neighbors = num_neighbors
 
@@ -177,13 +153,14 @@ def movie_recommender(user, num_neighbors, num_recommendation):
         
       df1.iloc[m,user_index] = predicted_r # save predicted ratings in a copy of the matrix
 
-  recommend_movies(user,num_recommendation)# call the function to print movie recommendations
+  recommend_movies(user,num_recommendation,df,df1)# call the function to print movie recommendations
 
-# movie_recommender(new_user_id, 10, 10)
-# recommend = user_recommend_movie(u=new_user_id, k=10, threshold=0.5, num_recommendations=10)
+# movie_recommender(new_user_id, 10, 10,ratings2)
+# recommend = user_recommend_movie(u=new_user_id, k=10, threshold=0.5, num_recommendations=10, ratings2=ratings2)
 # print(recommend)
 
-def content_based_recommendation(): 
+def content_based_recommendation(Moive_ratings): 
+  movies_large = pd.read_csv('../data/TMDB_all_movies.csv')
   # Extracting columns
   genres = movies_large['genres']
   # keywords = movies_large['keywords']
@@ -206,7 +183,8 @@ def content_based_recommendation():
   tfidf_vectorizer = TfidfVectorizer()
   tfidf_matrix = tfidf_vectorizer.fit_transform(combined)
   # Example user interactions
-  user_interactions = [(118340, 5)]
+  # user_interactions = [(118340, 5)]
+  user_interactions = Moive_ratings
 
   # Create a user profile by aggregating item features
   user_profile = np.zeros(tfidf_matrix.shape[1])
