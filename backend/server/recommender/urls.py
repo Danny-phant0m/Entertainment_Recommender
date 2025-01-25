@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import submit_rating
+from . import views
 
 urlpatterns = [
-    path('submit_rating/', submit_rating, name='submit_rating'),
+    path('submit_rating/', views.submit_rating, name='submit_rating'),
 ]

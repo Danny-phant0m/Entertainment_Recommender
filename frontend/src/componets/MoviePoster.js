@@ -77,8 +77,7 @@ const MovieCard = () => {
         movieId: currentMovie.id, // Get the current movie's ID
         rating: value, // Get the user's rating
       };
-    
-      fetch("http://localhost:8000/movies/submit-rating/", {
+      fetch("http://127.0.0.1:8000/submit_rating/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

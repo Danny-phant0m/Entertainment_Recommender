@@ -19,3 +19,5 @@ backend/data/TMDB_all_movies.csv
 # cache
 backend/model/__pycache__
 backend/server/server/__pycache__
+backend/server/recommender/__pycache__
+backend/server/recommender/migrations/__pycache__
