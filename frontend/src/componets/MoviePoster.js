@@ -25,22 +25,40 @@ const MovieCard = () => {
   const [value, setValue] = React.useState(1);
   const [hover, setHover] = React.useState(-1);
   const [fadeIn, setFadeIn] = useState(true); // For fade effect
-
+  const [castNames, setCastNames] = useState([]);
+  
   useEffect(() => {
     const options = {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        Authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
-      },
-    };
-    fetch(
-      "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc",
-      options
-    )
-      .then((res) => res.json())
-      .then((data) => setMovies(data.results))
-      .catch((err) => console.error(err));
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
+        },
+      };
+
+      fetch(
+        "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc",
+        options
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          setMovies(data.results); // Store movies in state      
+              // Loop through each movie to fetch its credits
+            data.results.forEach((movie) => {
+                fetch(`https://api.themoviedb.org/3/movie/${movie.id}/credits?language=en-US`, options)
+                .then((res) => res.json())
+                .then((creditsData) => {
+                    const top4Cast = creditsData.cast.slice(0, 4).map((member) => member.name); // Get first 4 cast names
+                    setCastNames((prevCasts) => ({
+                      ...prevCasts,
+                      [movie.id]: top4Cast,
+                    }));
+                    })
+                .catch((err) => console.error(`Error fetching credits for movie ${movie.id}:`, err));
+      });
+    })
+    .catch((err) => console.error(err));
+  
   }, []);
 
   const currentMovie = movies[currentMovieIndex];
@@ -95,6 +113,10 @@ const MovieCard = () => {
             >
                 <h1>{currentMovie.title}</h1>
                 <p>{currentMovie.overview}</p>
+                {/* Check if current movie ID matches and show cast names */}
+                {castNames[currentMovie.id] && (
+                    <p>{castNames[currentMovie.id].join(", ")}</p>
+                )}
             </div>
             )}
 
@@ -154,7 +176,7 @@ const MovieCard = () => {
                 }}
                 emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
                 size="large"
-                defaultValue={0}
+                defaultValue={3}
             />
             {value !== null && (
                 <Box sx={{ ml: 2 }}>{labels[hover !== -1 ? hover : value]}</Box>
