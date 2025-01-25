@@ -7,20 +7,14 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error
-from surprise import accuracy
 import optuna
 import matplotlib.pyplot as plt
 import re
-import os
-from scipy.sparse import hstack
-from surprise import Dataset, Reader, SVD
 from scipy.sparse import csr_matrix
 from sklearn.preprocessing import OrdinalEncoder
 import scipy.sparse as sp 
 import itertools
 from scipy.sparse import csr_matrix
-from surprise import KNNWithMeans
-from surprise.model_selection import GridSearchCV
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import LabelEncoder
 
@@ -189,56 +183,57 @@ def movie_recommender(user, num_neighbors, num_recommendation):
 # recommend = user_recommend_movie(u=new_user_id, k=10, threshold=0.5, num_recommendations=10)
 # print(recommend)
 
-# Extracting columns
-genres = movies_large['genres']
-# keywords = movies_large['keywords']
-overview = movies_large['overview']
-tagline = movies_large['tagline']
-production = movies_large['production_companies']
-language = movies_large['original_language']
-cast = movies_large['cast']
-director = movies_large['director']
-director_of_photography = movies_large['director_of_photography']
-writers = movies_large['writers']
-producers = movies_large['producers']
-music_composer = movies_large['music_composer']
+def content_based_recommendation(): 
+  # Extracting columns
+  genres = movies_large['genres']
+  # keywords = movies_large['keywords']
+  overview = movies_large['overview']
+  tagline = movies_large['tagline']
+  production = movies_large['production_companies']
+  language = movies_large['original_language']
+  cast = movies_large['cast']
+  director = movies_large['director']
+  director_of_photography = movies_large['director_of_photography']
+  writers = movies_large['writers']
+  producers = movies_large['producers']
+  music_composer = movies_large['music_composer']
 
 
-# Combine genres, keywords, and overview into a single string for each movie
-combined = genres.fillna('') + ' ' + overview.fillna('') + ' ' + tagline.fillna('') + ' ' + production.fillna('') + ' ' + language.fillna('') + ' ' + cast.fillna('')  + ' ' + director.fillna('') + ' ' + director_of_photography.fillna('')  + ' ' + writers.fillna('')  + ' ' + producers.fillna('')  + ' ' + music_composer.fillna('') 
+  # Combine genres, keywords, and overview into a single string for each movie
+  combined = genres.fillna('') + ' ' + overview.fillna('') + ' ' + tagline.fillna('') + ' ' + production.fillna('') + ' ' + language.fillna('') + ' ' + cast.fillna('')  + ' ' + director.fillna('') + ' ' + director_of_photography.fillna('')  + ' ' + writers.fillna('')  + ' ' + producers.fillna('')  + ' ' + music_composer.fillna('') 
 
-# Extract features from text descriptions
-tfidf_vectorizer = TfidfVectorizer()
-tfidf_matrix = tfidf_vectorizer.fit_transform(combined)
-# Example user interactions
-user_interactions = [(118340, 5)]
+  # Extract features from text descriptions
+  tfidf_vectorizer = TfidfVectorizer()
+  tfidf_matrix = tfidf_vectorizer.fit_transform(combined)
+  # Example user interactions
+  user_interactions = [(118340, 5)]
 
-# Create a user profile by aggregating item features
-user_profile = np.zeros(tfidf_matrix.shape[1])
-for id, rating in user_interactions:
-    item_index = movies_large.index[movies_large['id'] == id][0]
-    print(item_index)
-    user_profile += tfidf_matrix[item_index].toarray()[0] * rating
+  # Create a user profile by aggregating item features
+  user_profile = np.zeros(tfidf_matrix.shape[1])
+  for id, rating in user_interactions:
+      item_index = movies_large.index[movies_large['id'] == id][0]
+      print(item_index)
+      user_profile += tfidf_matrix[item_index].toarray()[0] * rating
 
-# Calculate cosine similarity between the user profile and item features
-similarities = cosine_similarity([user_profile], tfidf_matrix)
+  # Calculate cosine similarity between the user profile and item features
+  similarities = cosine_similarity([user_profile], tfidf_matrix)
 
-# Number of recommendations to return
-num_recommendations = 10  # Adjust this as needed
+  # Number of recommendations to return
+  num_recommendations = 10  # Adjust this as needed
 
-# Sort similarities in descending order and get the indices
-sorted_indices = np.argsort(similarities[0])[::-1]
+  # Sort similarities in descending order and get the indices
+  sorted_indices = np.argsort(similarities[0])[::-1]
 
-# Limit the recommendations to the top N
-top_indices = sorted_indices[:num_recommendations]
+  # Limit the recommendations to the top N
+  top_indices = sorted_indices[:num_recommendations]
 
-# Map sorted indices to the original DataFrame
-recommended_movies = movies_large.iloc[top_indices]
+  # Map sorted indices to the original DataFrame
+  recommended_movies = movies_large.iloc[top_indices]
 
-# Extract the IDs of the recommended movies
-recommended_item_ids = recommended_movies['id']
+  # Extract the IDs of the recommended movies
+  recommended_item_ids = recommended_movies['id']
 
-# Display recommendations
-print("Recommended Items:")
-for id in recommended_item_ids:
-    print(f"Movie {id}")
+  # Display recommendations
+  print("Recommended Items:")
+  for id in recommended_item_ids:
+      print(f"Movie {id}")

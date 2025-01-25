@@ -27,6 +27,7 @@ const MovieCard = () => {
   const [hover, setHover] = React.useState(-1);
   const [fadeIn, setFadeIn] = useState(true); // For fade effect
   const [castNames, setCastNames] = useState([]);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const options = {
@@ -38,7 +39,7 @@ const MovieCard = () => {
     };
 
     fetch(
-      "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc",
+      `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=${page}&sort_by=popularity.desc`,
       options
     )
       .then((res) => res.json())
@@ -60,15 +61,20 @@ const MovieCard = () => {
       })
       .catch((err) => console.error(err));
 
-  }, []);
+  }, [page]);
+
+  const loadMoreMovies = () => {
+    setPage((prevPage) => prevPage + 1); // Increment page number
+  };
 
   const currentMovie = movies[currentMovieIndex];
 
   const handleNextMovie = () => {
     setFadeIn(false); // Trigger fade-out
     setTimeout(() => {
-      setCurrentMovieIndex((prevIndex) =>
-        prevIndex < movies.length - 1 ? prevIndex + 1 : 0
+      setCurrentMovieIndex((prevIndex) =>{
+        return prevIndex < movies.length - 1 ? prevIndex + 1 : (loadMoreMovies(), prevIndex);
+      }
       );
       setFadeIn(true); // Trigger fade-in
     }, 500); // Match fade duration
