@@ -6,17 +6,18 @@ import Rating from '@mui/material/Rating';
 import Typography from '@mui/material/Typography';
 import StarIcon from '@mui/icons-material/Star';
 import { Fade } from "@mui/material";
+import '../styles/posterStyles.css'; // Import the CSS file
 
 const labels = {
-    1: 'Terrible',
-    2: 'Poor',
-    3: 'Ok',
-    4: 'Good',
-    5: 'Excellent',
+  1: 'Terrible',
+  2: 'Poor',
+  3: 'Ok',
+  4: 'Good',
+  5: 'Excellent',
 };
 
 function getLabelText(value) {
-    return `${value} Star${value !== 1 ? 's' : ''}, ${labels[value]}`;
+  return `${value} Star${value !== 1 ? 's' : ''}, ${labels[value]}`;
 }
 
 const MovieCard = () => {
@@ -26,39 +27,39 @@ const MovieCard = () => {
   const [hover, setHover] = React.useState(-1);
   const [fadeIn, setFadeIn] = useState(true); // For fade effect
   const [castNames, setCastNames] = useState([]);
-  
+
   useEffect(() => {
     const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
-        },
-      };
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        Authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
+      },
+    };
 
-      fetch(
-        "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc",
-        options
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          setMovies(data.results); // Store movies in state      
-              // Loop through each movie to fetch its credits
-            data.results.forEach((movie) => {
-                fetch(`https://api.themoviedb.org/3/movie/${movie.id}/credits?language=en-US`, options)
-                .then((res) => res.json())
-                .then((creditsData) => {
-                    const top4Cast = creditsData.cast.slice(0, 4).map((member) => member.name); // Get first 4 cast names
-                    setCastNames((prevCasts) => ({
-                      ...prevCasts,
-                      [movie.id]: top4Cast,
-                    }));
-                    })
-                .catch((err) => console.error(`Error fetching credits for movie ${movie.id}:`, err));
-      });
-    })
-    .catch((err) => console.error(err));
-  
+    fetch(
+      "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc",
+      options
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setMovies(data.results); // Store movies in state
+        // Loop through each movie to fetch its credits
+        data.results.forEach((movie) => {
+          fetch(`https://api.themoviedb.org/3/movie/${movie.id}/credits?language=en-US`, options)
+            .then((res) => res.json())
+            .then((creditsData) => {
+              const top4Cast = creditsData.cast.slice(0, 4).map((member) => member.name); // Get first 4 cast names
+              setCastNames((prevCasts) => ({
+                ...prevCasts,
+                [movie.id]: top4Cast,
+              }));
+            })
+            .catch((err) => console.error(`Error fetching credits for movie ${movie.id}:`, err));
+        });
+      })
+      .catch((err) => console.error(err));
+
   }, []);
 
   const currentMovie = movies[currentMovieIndex];
@@ -74,51 +75,26 @@ const MovieCard = () => {
   };
 
   return (
-    <div style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        height: "100vh",
-        width: "100vw",
+    <div
+      className="movie-card-container"
+      style={{
         backgroundImage: `url(https://image.tmdb.org/t/p/original${currentMovie?.backdrop_path})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        zIndex: -1,
+      }}
+    >
+      <Fade in={fadeIn} timeout={500}>
+        <div className="movie-card-content" style={{
+        backgroundImage: `url(https://image.tmdb.org/t/p/original${currentMovie?.backdrop_path})`,
       }}>
-        <Fade in={fadeIn} timeout={500}>
-        <div
-            style={{
-            height: "100vh",
-            width: "100vw",
-            backgroundImage: `url(https://image.tmdb.org/t/p/original${currentMovie?.backdrop_path})`,
-            backgroundColor: 'black',
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            position: "relative",
-            color: "white",
-            textShadow: "1px 1px 5px rgba(0, 0, 0, 0.8)",
-            }}
-        >
-            {currentMovie && (
-            <div
-                style={{
-                position: "absolute",
-                bottom: "5%",
-                left: "1%",
-                right: "60%",
-                padding: "20px",
-                background: "rgba(0, 0, 0, 0.6)",
-                borderRadius: "25px",
-                }}
-            >
-                <h1>{currentMovie.title}</h1>
-                <p>{currentMovie.overview}</p>
-                {/* Check if current movie ID matches and show cast names */}
-                {castNames[currentMovie.id] && (
-                    <p>{castNames[currentMovie.id].join(", ")}</p>
-                )}
+          {currentMovie && (
+            <div className="movie-info-box">
+              <h1>{currentMovie.title}</h1>
+              <p>{currentMovie.overview}</p>
+              {/* Check if current movie ID matches and show cast names */}
+              {castNames[currentMovie.id] && (
+                <p>{castNames[currentMovie.id].join(", ")}</p>
+              )}
             </div>
-            )}
+          )}
 
             <Typography
                 variant="h3"
@@ -129,6 +105,7 @@ const MovieCard = () => {
                 color: '#fff',
                 textAlign: 'center',
                 position: "absolute",
+                left: '1%',
                 top: "1%",
                 width: "30%",
                 backgroundColor: 'rgba(0, 0, 0, 0.4)', 
@@ -153,37 +130,29 @@ const MovieCard = () => {
             <ArrowForwardIosIcon style={{ color: "white", fontSize: "30px" }} />
             </IconButton>
 
-            <Box sx={{
-            position: "fixed",
-            bottom: '20%', 
-            right: '10%',
-            '& > legend': { mt: 2 },
-            backgroundColor: "rgba(0, 0, 0, 0.6)",
-            borderRadius: "25px",
-            padding: "20px",
-            }}>
+          <Box className="rating-box">
             <Typography component="legend">Rate the Movie</Typography>
             <Rating
-                name="hover-feedback"
-                value={value}
-                precision={1}
-                getLabelText={getLabelText}
-                onChange={(event, newValue) => {
+              name="hover-feedback"
+              value={value}
+              precision={1}
+              getLabelText={getLabelText}
+              onChange={(event, newValue) => {
                 setValue(newValue);
-                }}
-                onChangeActive={(event, newHover) => {
+              }}
+              onChangeActive={(event, newHover) => {
                 setHover(newHover);
-                }}
-                emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
-                size="large"
-                defaultValue={3}
+              }}
+              emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
+              size="large"
+              defaultValue={3}
             />
             {value !== null && (
-                <Box sx={{ ml: 2 }}>{labels[hover !== -1 ? hover : value]}</Box>
+              <Box sx={{ ml: 2 }}>{labels[hover !== -1 ? hover : value]}</Box>
             )}
-            </Box>
+          </Box>
         </div>
-        </Fade>
+      </Fade>
     </div>
   );
 };
