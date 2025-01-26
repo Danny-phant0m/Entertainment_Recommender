@@ -6,7 +6,8 @@ import Rating from '@mui/material/Rating';
 import Typography from '@mui/material/Typography';
 import StarIcon from '@mui/icons-material/Star';
 import { Fade } from "@mui/material";
-import '../styles/posterStyles.css'; // Import the CSS file
+import '../styles/posterStyles.css';
+import CircularProgress from "@mui/material/CircularProgress";
 
 const labels = {
   1: 'Terrible',
@@ -28,6 +29,7 @@ const MovieCard = () => {
   const [fadeIn, setFadeIn] = useState(true); // For fade effect
   const [castNames, setCastNames] = useState([]);
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const options = {
@@ -44,6 +46,7 @@ const MovieCard = () => {
     )
       .then((res) => res.json())
       .then((data) => {
+        console.log(data.results)
         setMovies(data.results); // Store movies in state
         // Loop through each movie to fetch its credits
         data.results.forEach((movie) => {
@@ -59,44 +62,71 @@ const MovieCard = () => {
             .catch((err) => console.error(`Error fetching credits for movie ${movie.id}:`, err));
         });
       })
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
 
   }, [page]);
 
   const loadMoreMovies = () => {
-    setPage((prevPage) => prevPage + 1); // Increment page number
-  };
+  setCurrentMovieIndex(0); // Reset to the first movie
+  setMovies([]); // Clear the current movie data
+  setPage((prevPage) => prevPage + 1); // Load the next page
+};
+
 
   const currentMovie = movies[currentMovieIndex];
 
-  const handleNextMovie = () => {
-    setFadeIn(false); // Trigger fade-out
-    setTimeout(() => {
-      setCurrentMovieIndex((prevIndex) =>{
-        return prevIndex < movies.length - 1 ? prevIndex + 1 : (loadMoreMovies(), prevIndex);
-      }
-      );
-      setFadeIn(true); // Trigger fade-in
-    }, 500); // Match fade duration
+  const preloadImage = (url) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = url;
+      img.onload = resolve; 
+    });
+  };
 
-    const ratingData = {
-        movieId: currentMovie.id, // Get the current movie's ID
-        rating: value, // Get the user's rating
-      };
-      fetch("http://127.0.0.1:8000/submit_rating/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(ratingData),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log("Rating submitted successfully:", data);
-        })
-        .catch((error) => {
-          console.error("Error submitting rating:", error);
-        });
+  const handleNextMovie = () => {
+    setFadeIn(true);
+    setLoading(true)
+    
+    setTimeout(async () => {
+        const nextMovieIndex = currentMovieIndex + 1;
+        if (nextMovieIndex < movies.length) {
+          // If the next movie is within the current list
+          const nextMovie = movies[nextMovieIndex];
+          if (nextMovie.backdrop_path) {
+            const backdropUrl = `https://image.tmdb.org/t/p/original${nextMovie.backdrop_path}`;
+            await preloadImage(backdropUrl);
+          }
+          
+          setCurrentMovieIndex(nextMovieIndex);
+        } else {
+          loadMoreMovies();
+        }
+    
+        setFadeIn(true); // Trigger fade-in
+        setLoading(false); // Stop loading
+      }, 500); // Match fade duration
+
+    // const ratingData = {
+    //     movieId: currentMovie.id, // Get the current movie's ID
+    //     rating: value, // Get the user's rating
+    //   };
+    //   fetch("http://127.0.0.1:8000/submit_rating/", {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify(ratingData),
+    //   })
+    //     .then((response) => response.json())
+    //     .then((data) => {
+    //       console.log("Rating submitted successfully:", data);
+    //     })
+    //     .catch((error) => {
+    //       console.error("Error submitting rating:", error);
+    //     });
   };
 
   return (
@@ -106,6 +136,20 @@ const MovieCard = () => {
         backgroundImage: `url(https://image.tmdb.org/t/p/original${currentMovie?.backdrop_path})`,
       }}
     >
+        {loading && (
+        <div className="loader">
+          <CircularProgress
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+            color="primary"
+          />
+        </div>
+      )}
+      {!loading && (
       <Fade in={fadeIn} timeout={500}>
         <div className="movie-card-content" style={{
         backgroundImage: `url(https://image.tmdb.org/t/p/original${currentMovie?.backdrop_path})`,
@@ -178,6 +222,7 @@ const MovieCard = () => {
           </Box>
         </div>
       </Fade>
+      )}
     </div>
   );
 };
