@@ -21,6 +21,14 @@ function getLabelText(value) {
   return `${value} Star${value !== 1 ? 's' : ''}, ${labels[value]}`;
 }
 
+const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
+    },
+  };
+
 const MovieCard = () => {
   const [movies, setMovies] = useState([]);
   const [currentMovieIndex, setCurrentMovieIndex] = useState(0);
@@ -30,17 +38,11 @@ const MovieCard = () => {
   const [castNames, setCastNames] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [ratings, setRatings] = useState([]); // Store ratings
+  const [ratings, setRatings] = useState([]); 
+  const [displayedMovieIds, setDisplayedMovieIds] = useState(new Set());
 
+  
   useEffect(() => {
-    const options = {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        Authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
-      },
-    };
-
     fetch(
       `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=${page}&sort_by=popularity.desc`,
       options
@@ -70,13 +72,20 @@ const MovieCard = () => {
   }, [page]);
 
   const loadMoreMovies = () => {
-  setCurrentMovieIndex(0); // Reset to the first movie
-  setMovies([]); // Clear the current movie data
-  setPage((prevPage) => prevPage + 1); // Load the next page
-};
+    setCurrentMovieIndex(0); // Reset to the first movie
+    setMovies([]); // Clear the current movie data
+    setPage((prevPage) => prevPage + 1); // Load the next page
+  };
 
 
   const currentMovie = movies[currentMovieIndex];
+
+  useEffect(() => {
+    if (currentMovie) {
+      setDisplayedMovieIds((prev) => new Set(prev).add(currentMovie.id));
+    }
+  }, [currentMovie]);
+  
 
   const preloadImage = (url) => {
     return new Promise((resolve) => {
@@ -90,26 +99,34 @@ const MovieCard = () => {
     setFadeIn(true);
     setLoading(true)
     
-    setTimeout(async () => {
+    if(value >= 3){
+        setMovies([])
+        fetch(`https://api.themoviedb.org/3/movie/${currentMovie.id}/recommendations?language=en-US&page=${page}`, options)
+        .then((res) => res.json())
+        .then((data) => {
+            const filteredMovies = data.results.filter(
+                (movie) => !displayedMovieIds.has(movie.id)
+              );
+              setMovies(filteredMovies);
+            setCurrentMovieIndex(0);
+            setLoading(false)
+        })
+        .catch((err) => console.error("Error fetching recommendations:", err));
+      }
+    
         const nextMovieIndex = currentMovieIndex + 1;
         if (nextMovieIndex < movies.length) {
-          // If the next movie is within the current list
           const nextMovie = movies[nextMovieIndex];
           if (nextMovie.backdrop_path) {
             const backdropUrl = `https://image.tmdb.org/t/p/original${nextMovie.backdrop_path}`;
-            await preloadImage(backdropUrl);
+             preloadImage(backdropUrl);
           }
-          
           setCurrentMovieIndex(nextMovieIndex);
         } else {
           loadMoreMovies();
-        }
-    
-        setFadeIn(true); // Trigger fade-in
-        setLoading(false); // Stop loading
-      }, 500); // Match fade duration
+        }  
 
-      if (value) { // Only store rating if it's not null
+      if (value) {
         setRatings((prev) => [...prev, { movieId: currentMovie.id, rating: value }]);
       }
     
@@ -131,6 +148,8 @@ const MovieCard = () => {
             });
         setRatings([]);
       }
+      setFadeIn(true); // Trigger fade-in
+      setLoading(false); // Stop loading
   };
 
   return (
