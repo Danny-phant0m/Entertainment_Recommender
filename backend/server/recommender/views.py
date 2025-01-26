@@ -3,6 +3,9 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 import pandas as pd
+import sys
+sys.path.append(r'C:\Users\Daniel\Documents\Entertainment_Recommender\backend')
+from model.recommendation_system import content_based_recommendation
 
 # Example view to handle ratings
 @csrf_exempt  # For now, disable CSRF for testing, but set up proper CSRF protection later
@@ -27,15 +30,9 @@ def submit_rating(request):
             # Parse the JSON data from the request body
             data = json.loads(request.body)
 
-            movie_id = data.get("movieId")
-            rating = data.get("rating")
+            user_interactions = [(rating['movieId'], rating['rating']) for rating in data]
 
-            # Validate the data
-            if not movie_id or not rating:
-                return JsonResponse({"error": "Invalid data"}, status=400)
-
-            print(f"Received rating {rating} for movie {movie_id}")
-
+            content_based_recommendation(user_interactions)
             # Respond with a success message
             return JsonResponse({"message": "Rating submitted successfully!"}, status=200)
 

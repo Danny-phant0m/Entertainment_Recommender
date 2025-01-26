@@ -29,6 +29,21 @@ const options = {
     },
   };
 
+const getCast = (data,setCastNames) => {
+    data.forEach((movie) => {
+    fetch(`https://api.themoviedb.org/3/movie/${movie.id}/credits?language=en-US`, options)
+            .then((res) => res.json())
+            .then((creditsData) => {
+              const top4Cast = creditsData.cast.slice(0, 4).map((member) => member.name); // Get first 4 cast names
+              setCastNames((prevCasts) => ({
+                ...prevCasts,
+                [movie.id]: top4Cast,
+              }));
+            })
+            .catch((err) => console.error(`Error fetching credits for movie ${movie.id}:`, err));
+        });
+}
+
 const MovieCard = () => {
   const [movies, setMovies] = useState([]);
   const [currentMovieIndex, setCurrentMovieIndex] = useState(0);
@@ -49,20 +64,8 @@ const MovieCard = () => {
     )
       .then((res) => res.json())
       .then((data) => {
-        setMovies(data.results); // Store movies in state
-        // Loop through each movie to fetch its credits
-        data.results.forEach((movie) => {
-          fetch(`https://api.themoviedb.org/3/movie/${movie.id}/credits?language=en-US`, options)
-            .then((res) => res.json())
-            .then((creditsData) => {
-              const top4Cast = creditsData.cast.slice(0, 4).map((member) => member.name); // Get first 4 cast names
-              setCastNames((prevCasts) => ({
-                ...prevCasts,
-                [movie.id]: top4Cast,
-              }));
-            })
-            .catch((err) => console.error(`Error fetching credits for movie ${movie.id}:`, err));
-        });
+        setMovies(data.results);
+        getCast(data.results,setCastNames)
       })
       .catch((err) => {
         console.error(err);
@@ -76,7 +79,6 @@ const MovieCard = () => {
     setMovies([]); // Clear the current movie data
     setPage((prevPage) => prevPage + 1); // Load the next page
   };
-
 
   const currentMovie = movies[currentMovieIndex];
 
@@ -104,6 +106,7 @@ const MovieCard = () => {
         fetch(`https://api.themoviedb.org/3/movie/${currentMovie.id}/recommendations?language=en-US&page=${page}`, options)
         .then((res) => res.json())
         .then((data) => {
+            getCast(data.results,setCastNames)
             const filteredMovies = data.results.filter(
                 (movie) => !displayedMovieIds.has(movie.id)
               );
@@ -142,6 +145,14 @@ const MovieCard = () => {
             .then((response) => response.json())
             .then((data) => {
               console.log("Rating submitted successfully:", data);
+            //   const movieNames = ["Sonic", "Avatar", "Inception"];
+
+            // movieNames.forEach((movieName) => {
+            //   fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(movieName)}&include_adult=false&language=en-US&page=1`, options)
+            //     .then(res => res.json())
+            //     .then(res => console.log(movieName, res))
+            //     .catch(err => console.error(err));
+            // });
             })
             .catch((error) => {
               console.error("Error submitting rating:", error);
