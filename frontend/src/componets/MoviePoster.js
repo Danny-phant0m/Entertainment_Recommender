@@ -30,6 +30,7 @@ const MovieCard = () => {
   const [castNames, setCastNames] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [ratings, setRatings] = useState([]); // Store ratings
 
   useEffect(() => {
     const options = {
@@ -46,7 +47,6 @@ const MovieCard = () => {
     )
       .then((res) => res.json())
       .then((data) => {
-        console.log(data.results)
         setMovies(data.results); // Store movies in state
         // Loop through each movie to fetch its credits
         data.results.forEach((movie) => {
@@ -109,24 +109,28 @@ const MovieCard = () => {
         setLoading(false); // Stop loading
       }, 500); // Match fade duration
 
-    // const ratingData = {
-    //     movieId: currentMovie.id, // Get the current movie's ID
-    //     rating: value, // Get the user's rating
-    //   };
-    //   fetch("http://127.0.0.1:8000/submit_rating/", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(ratingData),
-    //   })
-    //     .then((response) => response.json())
-    //     .then((data) => {
-    //       console.log("Rating submitted successfully:", data);
-    //     })
-    //     .catch((error) => {
-    //       console.error("Error submitting rating:", error);
-    //     });
+      if (value) { // Only store rating if it's not null
+        setRatings((prev) => [...prev, { movieId: currentMovie.id, rating: value }]);
+      }
+    
+      // If 10 ratings are collected, send them
+      if (ratings.length + 1 >= 11) {
+        fetch("http://127.0.0.1:8000/submit_rating/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(ratings),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              console.log("Rating submitted successfully:", data);
+            })
+            .catch((error) => {
+              console.error("Error submitting rating:", error);
+            });
+        setRatings([]);
+      }
   };
 
   return (
