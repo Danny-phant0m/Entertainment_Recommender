@@ -33,6 +33,7 @@ def submit_rating(request):
             user_interactions = [(rating['movieId'], rating['rating']) for rating in data]
 
             content_based_recommendation(user_interactions)
+
             # Respond with a success message
             return JsonResponse({"message": "Rating submitted successfully!"}, status=200)
 

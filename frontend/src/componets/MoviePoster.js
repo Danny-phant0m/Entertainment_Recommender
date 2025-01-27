@@ -135,6 +135,7 @@ const MovieCard = () => {
     
       // If 10 ratings are collected, send them
       if (ratings.length + 1 >= 11) {
+        console.log("Movies rated now sending")
         fetch("http://127.0.0.1:8000/submit_rating/", {
             method: "POST",
             headers: {

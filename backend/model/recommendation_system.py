@@ -190,14 +190,13 @@ def content_based_recommendation(Moive_ratings):
   user_profile = np.zeros(tfidf_matrix.shape[1])
   for id, rating in user_interactions:
       item_index = movies_large.index[movies_large['id'] == id][0]
-      print(item_index)
       user_profile += tfidf_matrix[item_index].toarray()[0] * rating
 
   # Calculate cosine similarity between the user profile and item features
   similarities = cosine_similarity([user_profile], tfidf_matrix)
 
   # Number of recommendations to return
-  num_recommendations = 10  # Adjust this as needed
+  num_recommendations = 10 
 
   # Sort similarities in descending order and get the indices
   sorted_indices = np.argsort(similarities[0])[::-1]
@@ -206,12 +205,24 @@ def content_based_recommendation(Moive_ratings):
   top_indices = sorted_indices[:num_recommendations]
 
   # Map sorted indices to the original DataFrame
-  recommended_movies = movies_large.iloc[top_indices]
+  recommended_movies = movies_large.iloc[sorted_indices]
+
+  # Get the list of movie IDs the user has already rated
+  rated_movie_ids = [id for id, _ in user_interactions]
+
+  # Filter out rated movies
+  recommended_movies = recommended_movies[~recommended_movies['id'].isin(rated_movie_ids)]
+
+  recommended_movies = recommended_movies.head(num_recommendations)
 
   # Extract the IDs of the recommended movies
   recommended_item_ids = recommended_movies['id']
 
-  # Display recommendations
+  # Filter the dataset to get movies matching the recommended IDs
+  recommended_movies_with_titles = movies_large[movies_large['id'].isin(recommended_item_ids)]
+  # Display recommendations with titles
   print("Recommended Items:")
-  for id in recommended_item_ids:
-      print(f"Movie {id}")
+  for _, row in recommended_movies_with_titles.iterrows():
+      print(f"Movie: {row['title']}")
+
+  return recommended_movies_with_titles
