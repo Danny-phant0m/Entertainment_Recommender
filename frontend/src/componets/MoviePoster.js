@@ -54,9 +54,10 @@ const MovieCard = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [ratings, setRatings] = useState([]); 
-  let notRatedCount = 0;
+  const notRatedCountRef = useRef(0);  
   const displayedMovieIdsRef = useRef([]);
   const currentMovie = movies[currentMovieIndex];
+  const apiSourceRef = useRef("discover"); // Track API source
   
   const fetchMovies = useCallback(() => {
     fetch(
@@ -69,6 +70,7 @@ const MovieCard = () => {
         const filteredMovies = data.results.filter(
             (movie) => !displayedMovieIdsRef.current.includes(movie.id)
           );
+        apiSourceRef.current = "discover";
         setMovies(filteredMovies);
         getCast(data.results, setCastNames);
       })
@@ -101,30 +103,30 @@ const MovieCard = () => {
     setFadeIn(true);
     setLoading(true)
 
-    // If value is null, count how many times it's been null
     if (value === null) {
-        notRatedCount++;
+        notRatedCountRef.current++;
     } else {
-        notRatedCount = 0; 
+        notRatedCountRef.current = 0; 
     }
 
-    if (notRatedCount >= 2) {
-        console.log(notRatedCount)
+    if (notRatedCountRef.current >= 2  && apiSourceRef.current === "similar") {
+        setMovies([])
         fetchMovies()
-        notRatedCount = 0; 
+        notRatedCountRef.current = 0; 
     }
     
     displayedMovieIdsRef.current.push(currentMovie.id);
     
     if(value >= 3){
         setMovies([])
-        fetch(`https://api.themoviedb.org/3/movie/${currentMovie.id}/recommendations?language=en-US&page=${page}`, options)
+        fetch(`https://api.themoviedb.org/3/movie/${currentMovie.id}/similar?language=en-US&page=${page}`, options)
         .then((res) => res.json())
         .then((data) => {
             getCast(data.results,setCastNames)
             const filteredMovies = data.results.filter(
                 (movie) => !displayedMovieIdsRef.current.includes(movie.id)
               );
+              apiSourceRef.current = "similar";
             setMovies(filteredMovies);
             setCurrentMovieIndex(0);
             setLoading(false)
