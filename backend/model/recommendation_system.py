@@ -225,4 +225,4 @@ def content_based_recommendation(Moive_ratings):
   for _, row in recommended_movies_with_titles.iterrows():
       print(f"Movie: {row['title']}")
 
-  return recommended_movies_with_titles
+  return recommended_movies_with_titles['title'].tolist()

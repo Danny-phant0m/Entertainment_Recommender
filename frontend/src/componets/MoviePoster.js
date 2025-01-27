@@ -115,6 +115,10 @@ const MovieCard = () => {
         setMovies([])
         fetchMovies()
         notRatedCountRef.current = 0; 
+    }else if(notRatedCountRef.current >= 10){
+        setMovies([])
+        fetchMovies()
+        notRatedCountRef.current = 0; 
     }
     
     displayedMovieIdsRef.current.push(currentMovie.id);
@@ -164,7 +168,7 @@ const MovieCard = () => {
           })
             .then((response) => response.json())
             .then((data) => {
-              console.log("Rating submitted successfully:", data);
+                console.log("Recommended movies:", data.recommended_movies);
             //   const movieNames = ["Sonic", "Avatar", "Inception"];
 
             // movieNames.forEach((movieName) => {

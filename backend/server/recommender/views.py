@@ -32,10 +32,13 @@ def submit_rating(request):
 
             user_interactions = [(rating['movieId'], rating['rating']) for rating in data]
 
-            content_based_recommendation(user_interactions)
+            content_recommened = content_based_recommendation(user_interactions)
 
-            # Respond with a success message
-            return JsonResponse({"message": "Rating submitted successfully!"}, status=200)
+            # Respond with recommendations
+            return JsonResponse({
+                "message": "Rating submitted successfully!",
+                "recommended_movies": content_recommened
+            }, status=200)
 
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON"}, status=400)
