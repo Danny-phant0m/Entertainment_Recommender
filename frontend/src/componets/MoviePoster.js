@@ -57,19 +57,20 @@ const MovieCard = () => {
   const notRatedCountRef = useRef(0);  
   const displayedMovieIdsRef = useRef([]);
   const currentMovie = movies[currentMovieIndex];
-  const apiSourceRef = useRef("discover"); // Track API source
+  const apiSourceRef = useRef("similar"); // Track API source
   
   const fetchMovies = useCallback(() => {
+    const randomYear = Math.floor(Math.random() * (2025 - 1980 + 1)) + 1980; // Random year between 1980 and 2025
+    console.log(randomYear)
     fetch(
-      `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=${page}&sort_by=popularity.desc`,
+      `https://api.themoviedb.org/3/discover/movie?primary_release_year=${randomYear}&include_adult=false&include_video=false&language=en-US&page=${page}&sort_by=popularity.desc`,
       options
     )
       .then((res) => res.json())
       .then((data) => {
-        console.log(displayedMovieIdsRef.current)
         const filteredMovies = data.results.filter(
-            (movie) => !displayedMovieIdsRef.current.includes(movie.id)
-          );
+          (movie) => !displayedMovieIdsRef.current.includes(movie.id)
+        );
         apiSourceRef.current = "discover";
         setMovies(filteredMovies);
         getCast(data.results, setCastNames);
@@ -79,6 +80,7 @@ const MovieCard = () => {
         setLoading(false);
       });
   }, [page]);
+
   
   useEffect(() => {
     fetchMovies();
@@ -109,7 +111,7 @@ const MovieCard = () => {
         notRatedCountRef.current = 0; 
     }
 
-    if (notRatedCountRef.current >= 2  && apiSourceRef.current === "similar") {
+    if (notRatedCountRef.current >= 5  && apiSourceRef.current === "similar") {
         setMovies([])
         fetchMovies()
         notRatedCountRef.current = 0; 
