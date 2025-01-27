@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import IconButton from "@mui/material/IconButton";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import Box from '@mui/material/Box';
@@ -54,40 +54,40 @@ const MovieCard = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [ratings, setRatings] = useState([]); 
-  const [displayedMovieIds, setDisplayedMovieIds] = useState(new Set());
-
+  let notRatedCount = 0;
+  const displayedMovieIdsRef = useRef([]);
+  const currentMovie = movies[currentMovieIndex];
   
-  useEffect(() => {
+  const fetchMovies = useCallback(() => {
     fetch(
       `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=${page}&sort_by=popularity.desc`,
       options
     )
       .then((res) => res.json())
       .then((data) => {
-        setMovies(data.results);
-        getCast(data.results,setCastNames)
+        console.log(displayedMovieIdsRef.current)
+        const filteredMovies = data.results.filter(
+            (movie) => !displayedMovieIdsRef.current.includes(movie.id)
+          );
+        setMovies(filteredMovies);
+        getCast(data.results, setCastNames);
       })
       .catch((err) => {
         console.error(err);
         setLoading(false);
       });
-
   }, [page]);
+  
+  useEffect(() => {
+    fetchMovies();
+  }, [fetchMovies]);
+  
 
   const loadMoreMovies = () => {
     setCurrentMovieIndex(0); // Reset to the first movie
     setMovies([]); // Clear the current movie data
     setPage((prevPage) => prevPage + 1); // Load the next page
   };
-
-  const currentMovie = movies[currentMovieIndex];
-
-  useEffect(() => {
-    if (currentMovie) {
-      setDisplayedMovieIds((prev) => new Set(prev).add(currentMovie.id));
-    }
-  }, [currentMovie]);
-  
 
   const preloadImage = (url) => {
     return new Promise((resolve) => {
@@ -100,6 +100,21 @@ const MovieCard = () => {
   const handleNextMovie = () => {
     setFadeIn(true);
     setLoading(true)
+
+    // If value is null, count how many times it's been null
+    if (value === null) {
+        notRatedCount++;
+    } else {
+        notRatedCount = 0; 
+    }
+
+    if (notRatedCount >= 2) {
+        console.log(notRatedCount)
+        fetchMovies()
+        notRatedCount = 0; 
+    }
+    
+    displayedMovieIdsRef.current.push(currentMovie.id);
     
     if(value >= 3){
         setMovies([])
@@ -108,9 +123,9 @@ const MovieCard = () => {
         .then((data) => {
             getCast(data.results,setCastNames)
             const filteredMovies = data.results.filter(
-                (movie) => !displayedMovieIds.has(movie.id)
+                (movie) => !displayedMovieIdsRef.current.includes(movie.id)
               );
-              setMovies(filteredMovies);
+            setMovies(filteredMovies);
             setCurrentMovieIndex(0);
             setLoading(false)
         })
