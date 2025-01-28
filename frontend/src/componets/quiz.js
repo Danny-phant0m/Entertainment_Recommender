@@ -4,14 +4,14 @@ import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles({
   root: {
-    backgroundImage: 'url(your-image-url)', // Set your background image URL here
+    backgroundImage: 'url(/images/Background_Image.jfif)',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     height: '100vh',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    filter: 'blur(8px)', 
+    filter: 'blur(4px)', 
     position: 'absolute',
     top: '0',
     left: '0',
@@ -118,7 +118,7 @@ const MovieQuiz = ({ onQuizComplete }) => {
         </Typography>
         <Fade in={fadeIn} timeout={500}>
           <Box>
-            <Typography variant="h5" style={{ marginBottom: '40px', color: 'black' }}>
+            <Typography variant="h5" style={{ marginBottom: '40px', color: 'White' }}>
               {questions[currentQuestionIndex].question}
             </Typography>
             <RadioGroup
