@@ -11,7 +11,7 @@ const useStyles = makeStyles({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    filter: 'blur(4px)', 
+    filter: 'blur(8px)', 
     position: 'absolute',
     top: '0',
     left: '0',
@@ -66,8 +66,8 @@ const MovieQuiz = ({ onQuizComplete }) => {
 
   const questions = [
     {
-      question: 'What genres do you enjoy the most?',
-      options: ['Action', 'Comedy', 'Drama', 'Sci-Fi', 'Horror'],
+      question: 'What’s your favorite movie genre?',
+      options: ['Action', 'Comedy', 'Drama', 'Sci-Fi', 'Horror','Romance', 'Fantsy','Mystery/Thriller','Documentary'],
       key: 'genre',
     },
     {
@@ -76,13 +76,13 @@ const MovieQuiz = ({ onQuizComplete }) => {
       key: 'decade',
     },
     {
-      question: 'What is your favorite movie type?',
-      options: ['Blockbusters', 'Indie Films', 'Documentaries', 'Animated', 'Foreign Films'],
+      question: 'What is the last movie you watched?',
+      options: [' Something new and recent', 'A classic movie', 'A documentary or biographical film', 'A foreign language film'],
       key: 'movie_type',
     },
     {
-      question: 'What mood do you prefer for movies?',
-      options: ['Funny', 'Thrilling', 'Emotional', 'Relaxing', 'Dark'],
+      question: 'What’s your preference on movie release years?',
+      options: ['I like watching new releases', ' I prefer older classics', 'A mix of both'],
       key: 'mood',
     },
     {
@@ -122,12 +122,17 @@ const MovieQuiz = ({ onQuizComplete }) => {
               {questions[currentQuestionIndex].question}
             </Typography>
             <RadioGroup
-              name="quiz"
-              value={answers[questions[currentQuestionIndex].key] || ''}
-              onChange={handleAnswerChange}
+               row={questions[currentQuestionIndex].options.length > 5}
+               name="quiz"
+               value={answers[questions[currentQuestionIndex].key] || ''}
+               onChange={handleAnswerChange}
+               style={{
+                 flexWrap: questions[currentQuestionIndex].options.length > 5 ? 'wrap' : 'nowrap',
+                 justifyContent: 'center',
+               }}
             >
               {questions[currentQuestionIndex].options.map((option, index) => (
-                <Paper key={index} className={classes.answerContainer} elevation={3} style={{ borderRadius: '15px' }}>
+                <Paper key={index} className={classes.answerContainer} elevation={3} style={{ borderRadius: '15px', margin: '5px' }}>
                   <FormControlLabel
                     value={option}
                     control={<Radio />}
