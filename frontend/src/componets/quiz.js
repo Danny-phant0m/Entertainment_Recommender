@@ -35,16 +35,16 @@ const useStyles = makeStyles({
     bottom: '10%',
   },
   questionNumber: {
-    color: '#FFD700', 
+    color: 'white', 
     fontWeight: 'bold',
     marginBottom: '20px',
     paddingBottom: '20px'
   },
   answerContainer: {
-    marginBottom: '10px',
     padding: '10px',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
     textAlign: 'left',
+    marginBottom: '10px',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
     backgroundColor: 'rgba(255, 255, 255, 0.2)', 
   },
   progress: {
@@ -132,7 +132,8 @@ const MovieQuiz = ({ onQuizComplete }) => {
   const handleAnswerChange = (event) => {
     setAnswers({ ...answers, [questions[currentQuestionIndex].key]: event.target.value });
   };
-  const GroupComponent = questions[currentQuestionIndex].key === 'genre' ? FormGroup : RadioGroup;
+  const key = questions[currentQuestionIndex].key
+  const GroupComponent = key === 'genre' | key === 'mood' ? FormGroup : RadioGroup;
   return (
     <>
       <div className={classes.root} />
@@ -171,7 +172,7 @@ const MovieQuiz = ({ onQuizComplete }) => {
                }}
             >
               {questions[currentQuestionIndex].options.map((option, index) => (
-                <Paper key={index} className={classes.answerContainer} elevation={3} style={{ borderRadius: '15px', margin: '5px' }}>
+                <Paper key={index} className={classes.answerContainer} elevation={3} style={{ borderRadius: '15px', margin: '5px', backgroundColor: 'rgba(255, 255, 255, 0.8)', }}>
                   <FormControlLabel
                     value={option}
                     control={<Radio />}
