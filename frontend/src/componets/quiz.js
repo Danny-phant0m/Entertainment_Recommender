@@ -60,7 +60,7 @@ const MovieQuiz = ({ onQuizComplete }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(false);
-  const totalQuestions = 6;
+  const totalQuestions = 9;
   const [fadeIn, setFadeIn] = useState(true);
   const classes = useStyles();
 
@@ -91,9 +91,24 @@ const MovieQuiz = ({ onQuizComplete }) => {
       key: 'style',
     },
     {
+      question: 'What’s your preferred movie mood?',
+      options: ['Funny', 'Emotional', 'Thrilling', 'Dark', 'Relaxing','Inspiring','Mysterious'],
+      key: 'mood',
+    },
+    {
       question: 'What is your preferred movie ratings?',
       options: ['A: All ages (suitable for everyone)', 'PG: Parental guidance recommended', 'PG-13: Parental guidance is advised for children under 13', '18+: Suitable for adults only'],
       key: 'rating',
+    },
+    {
+      question: 'Do you have a favorite director?',
+      options: ['Steven Spielberg', 'Quentin Tarantino', 'Christopher Nolan', 'Martin Scorsese', 'Greta Gerwig', 'None of these'],
+      key: 'director',
+    },
+    {
+      question: 'Do you have a favorite actor?',
+      options: ['Dwayne Johnson', 'Leonardo DiCaprio', 'Robert De Niro', 'Denzel Washington', 'Will Smith','Tom Cruise','Jackie Chan','None of these' ],
+      key: 'cast',
     },
   ];
 
@@ -127,12 +142,12 @@ const MovieQuiz = ({ onQuizComplete }) => {
               {questions[currentQuestionIndex].question}
             </Typography>
             <GroupComponent
-               row={questions[currentQuestionIndex].options.length > 5}
+               row={questions[currentQuestionIndex].options.length > 7}
                name="quiz"
                value={answers[questions[currentQuestionIndex].key] || ''}
                onChange={handleAnswerChange}
                style={{
-                 flexWrap: questions[currentQuestionIndex].options.length > 5 ? 'wrap' : 'nowrap',
+                 flexWrap: questions[currentQuestionIndex].options.length > 7 ? 'wrap' : 'nowrap',
                  justifyContent: 'center',
                }}
             >
