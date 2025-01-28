@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Box, Typography, Radio, RadioGroup, FormControlLabel, CircularProgress, Fade, Paper,FormGroup } from '@mui/material';
+import { Button, Box, Typography, Radio, RadioGroup, FormControlLabel, CircularProgress, Fade, Paper,FormGroup, TextField } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles({
@@ -60,7 +60,7 @@ const MovieQuiz = ({ onQuizComplete }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(false);
-  const totalQuestions = 9;
+  const totalQuestions = 10;
   const [fadeIn, setFadeIn] = useState(true);
   const classes = useStyles();
 
@@ -110,6 +110,10 @@ const MovieQuiz = ({ onQuizComplete }) => {
       options: ['Dwayne Johnson', 'Leonardo DiCaprio', 'Robert De Niro', 'Denzel Washington', 'Will Smith','Tom Cruise','Jackie Chan','None of these' ],
       key: 'cast',
     },
+    {
+      question: 'What is your favorite movie?',
+      key: 'favorite_movie',
+    },
   ];
 
   const handleNext = () => {
@@ -141,6 +145,21 @@ const MovieQuiz = ({ onQuizComplete }) => {
             <Typography variant="h5" style={{ marginBottom: '40px', color: 'White' }}>
               {questions[currentQuestionIndex].question}
             </Typography>
+            {questions[currentQuestionIndex].key === 'favorite_movie' ? (
+              <TextField
+                variant="outlined"
+                fullWidth
+                placeholder="Enter your favorite movie"
+                value={answers['favorite_movie'] || ''}
+                onChange={handleAnswerChange}
+                style={{ marginBottom: '20px', color: 'black' }}
+                slotProps={{
+                  input: {
+                    maxLength: 100, // Prevents overly long inputs
+                  },
+                }}
+              />
+            ) : (
             <GroupComponent
                row={questions[currentQuestionIndex].options.length > 7}
                name="quiz"
@@ -162,6 +181,7 @@ const MovieQuiz = ({ onQuizComplete }) => {
                 </Paper>
               ))}
             </GroupComponent>
+            )}
             <Button
               variant="contained"
               color="primary"
