@@ -196,13 +196,13 @@ def content_based_recommendation(Moive_ratings):
   similarities = cosine_similarity([user_profile], tfidf_matrix)
 
   # Number of recommendations to return
-  num_recommendations = 10 
+  num_recommendations = 20 
 
   # Sort similarities in descending order and get the indices
   sorted_indices = np.argsort(similarities[0])[::-1]
 
   # Limit the recommendations to the top N
-  top_indices = sorted_indices[:num_recommendations]
+  # top_indices = sorted_indices[:num_recommendations]
 
   # Map sorted indices to the original DataFrame
   recommended_movies = movies_large.iloc[sorted_indices]

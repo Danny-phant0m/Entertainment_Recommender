@@ -8,6 +8,7 @@ import StarIcon from '@mui/icons-material/Star';
 import { Fade } from "@mui/material";
 import '../styles/posterStyles.css';
 import CircularProgress from "@mui/material/CircularProgress";
+import MovieQuiz from "./quiz";
 
 const labels = {
   1: 'Terrible',
@@ -58,10 +59,17 @@ const MovieCard = () => {
   const displayedMovieIdsRef = useRef([]);
   const currentMovie = movies[currentMovieIndex];
   const apiSourceRef = useRef("similar"); // Track API source
-  
+  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [quizAnswers, setQuizAnswers] = useState(null);
+
+  const handleQuizComplete = (answers) => {
+    setQuizAnswers(answers);
+    setQuizCompleted(true);
+    console.log(quizAnswers)
+  };
+
   const fetchMovies = useCallback(() => {
     const randomYear = Math.floor(Math.random() * (2025 - 1980 + 1)) + 1980; // Random year between 1980 and 2025
-    console.log(randomYear)
     fetch(
       `https://api.themoviedb.org/3/discover/movie?primary_release_year=${randomYear}&include_adult=false&include_video=false&language=en-US&page=${page}&sort_by=popularity.desc`,
       options
@@ -85,8 +93,11 @@ const MovieCard = () => {
   useEffect(() => {
     fetchMovies();
   }, [fetchMovies]);
-  
 
+  if (!quizCompleted) {
+    return <MovieQuiz onQuizComplete={handleQuizComplete} />;
+  }
+  
   const loadMoreMovies = () => {
     setCurrentMovieIndex(0); // Reset to the first movie
     setMovies([]); // Clear the current movie data
