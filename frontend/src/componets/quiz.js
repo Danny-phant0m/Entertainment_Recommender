@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Box, Typography, Radio, RadioGroup, FormControlLabel, CircularProgress, Fade, Paper } from '@mui/material';
+import { Button, Box, Typography, Radio, RadioGroup, FormControlLabel, CircularProgress, Fade, Paper,FormGroup } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles({
@@ -60,14 +60,14 @@ const MovieQuiz = ({ onQuizComplete }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(false);
-  const totalQuestions = 5;
+  const totalQuestions = 6;
   const [fadeIn, setFadeIn] = useState(true);
   const classes = useStyles();
 
   const questions = [
     {
       question: 'What’s your favorite movie genre?',
-      options: ['Action', 'Comedy', 'Drama', 'Sci-Fi', 'Horror','Romance', 'Fantsy','Mystery/Thriller','Documentary'],
+      options: ['Action', 'Adventure', 'Animation', 'Comedy', 'Crime','Documentary', 'Drama','Family','Fantasy','History','Horror','Music','Mystery','Romance','Sci-Fi','Thriller','War'],
       key: 'genre',
     },
     {
@@ -90,6 +90,11 @@ const MovieQuiz = ({ onQuizComplete }) => {
       options: ['Fast-paced action', 'Slow-burn plots', 'Mix of both', 'Character-driven stories', 'Mysteries'],
       key: 'style',
     },
+    {
+      question: 'What is your preferred movie ratings?',
+      options: ['A: All ages (suitable for everyone)', 'PG: Parental guidance recommended', 'PG-13: Parental guidance is advised for children under 13', '18+: Suitable for adults only'],
+      key: 'rating',
+    },
   ];
 
   const handleNext = () => {
@@ -108,7 +113,7 @@ const MovieQuiz = ({ onQuizComplete }) => {
   const handleAnswerChange = (event) => {
     setAnswers({ ...answers, [questions[currentQuestionIndex].key]: event.target.value });
   };
-
+  const GroupComponent = questions[currentQuestionIndex].key === 'genre' ? FormGroup : RadioGroup;
   return (
     <>
       <div className={classes.root} />
@@ -121,7 +126,7 @@ const MovieQuiz = ({ onQuizComplete }) => {
             <Typography variant="h5" style={{ marginBottom: '40px', color: 'White' }}>
               {questions[currentQuestionIndex].question}
             </Typography>
-            <RadioGroup
+            <GroupComponent
                row={questions[currentQuestionIndex].options.length > 5}
                name="quiz"
                value={answers[questions[currentQuestionIndex].key] || ''}
@@ -141,7 +146,7 @@ const MovieQuiz = ({ onQuizComplete }) => {
                   />
                 </Paper>
               ))}
-            </RadioGroup>
+            </GroupComponent>
             <Button
               variant="contained"
               color="primary"
