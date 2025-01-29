@@ -60,9 +60,10 @@
         filters.with_crew = peopleMap.directors[quizAnswers.director];
         }             
       
-        // // Filter for mood (can have multiple)
+        // Filter for mood (can have multiple)
         // if (quizAnswers.mood) {
-        //   filters.with_keywords = quizAnswers.mood.join(',');
+        //   filters.with_keywords = quizAnswers.mood.join('|');
+        //   console.log("Keywords " ,quizAnswers.mood.join('|'))
         // }
       
         // Filter for decade (we use the decade to set the release year range)
@@ -93,10 +94,10 @@
         //     : quizAnswers.movie_type;
         // }
       
-        // Filter for rating (extracted from full string like "PG-13")
-        // if (quizAnswers.rating) {
-        //   filters.certification = quizAnswers.rating.split(':')[0];
-        // }
+        //Filter for rating (extracted from full string like "PG-13")
+        if (quizAnswers.rating) {
+          filters.certification = quizAnswers.rating.split(':')[0];
+        }
       
         return filters;
     },

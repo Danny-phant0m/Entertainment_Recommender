@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Box, Typography, Radio, RadioGroup, FormControlLabel, CircularProgress, Fade, Paper,FormGroup, TextField } from '@mui/material';
+import { Button, Box, Typography, Radio, RadioGroup, FormControlLabel, CircularProgress, Fade, Paper,FormGroup, TextField, Checkbox } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles({
@@ -97,7 +97,7 @@ const MovieQuiz = ({ onQuizComplete }) => {
     },
     {
       question: 'What is your preferred movie ratings?',
-      options: ['A: All ages (suitable for everyone)', 'PG: Parental guidance recommended', 'PG-13: Parental guidance is advised for children under 13', '18+: Suitable for adults only'],
+      options: ['A: All ages (Recommended for children)', 'PG: Parental guidance recommended', 'PG-13: Parental guidance is advised for children under 13', '18+: Suitable for adults only'],
       key: 'rating',
     },
     {
@@ -151,6 +151,8 @@ const MovieQuiz = ({ onQuizComplete }) => {
   
   const key = questions[currentQuestionIndex].key
   const GroupComponent = key === 'genre' | key === 'mood' ? FormGroup : RadioGroup;
+  const Control = key === 'genre' | key === 'mood' ? Checkbox : Radio;
+
   return (
     <>
       <div className={classes.root} />
@@ -192,7 +194,7 @@ const MovieQuiz = ({ onQuizComplete }) => {
                 <Paper key={index} className={classes.answerContainer} elevation={3} style={{ borderRadius: '15px', margin: '5px', backgroundColor: 'rgba(255, 255, 255, 0.8)', }}>
                   <FormControlLabel
                     value={option}
-                    control={<Radio />}
+                    control={<Control/>}
                     label={option}
                     style={{ color: 'black' }}
                   />
