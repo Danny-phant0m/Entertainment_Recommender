@@ -46,10 +46,10 @@
           };          
         let filters = {};
         // Filter for genres (can have multiple)
-        // if (quizAnswers.genre) {
-        //     const genreIds = quizAnswers.genre.map(genreName => genreMap[genreName]);
-        //     filters.with_genres = genreIds.join('|');
-        // }
+        if (quizAnswers.genre) {
+            const genreIds = quizAnswers.genre.map(genreName => genreMap[genreName]);
+            filters.with_genres = genreIds.join('|');
+        }
         
         // Filter for cast
         if (quizAnswers.cast !== 'None of these' && quizAnswers.director !== 'None of these') {

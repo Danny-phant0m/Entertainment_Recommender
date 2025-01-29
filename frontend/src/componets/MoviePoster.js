@@ -73,7 +73,6 @@ const MovieCard = () => {
     //const randomYear = Math.floor(Math.random() * (2025 - 1980 + 1)) + 1980; // Random year between 1980 and 2025
     const queryString = FilterUtils.toQueryString(FilterUtils.buildFilters(quizAnswers));
     console.log(queryString)
-    console.log(page)
     fetch(
       `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&${queryString}&page=${page}`,
       options
@@ -85,6 +84,8 @@ const MovieCard = () => {
         );
         apiSourceRef.current = "discover";
         setMovies(filteredMovies);
+        setCurrentMovieIndex(0);
+        console.log(filteredMovies)
         getCast(data.results, setCastNames);
       })
       .catch((err) => {
@@ -105,7 +106,12 @@ const MovieCard = () => {
   const loadMoreMovies = () => {
     setCurrentMovieIndex(0); // Reset to the first movie
     setMovies([]); // Clear the current movie data
-    setPage((prevPage) => prevPage + 1); // Load the next page
+    if (page < movies.total_pages) {
+      setPage((prevPage) => prevPage + 1);
+      setQuizAnswers({})
+    } else {
+      setPage(1);
+    }
   };
 
   const preloadImage = (url) => {
@@ -125,18 +131,18 @@ const MovieCard = () => {
     } else {
         notRatedCountRef.current = 0; 
     }
-
     if (notRatedCountRef.current >= 5  && apiSourceRef.current === "similar") {
         setMovies([])
         fetchMovies()
         notRatedCountRef.current = 0; 
-    }else if(notRatedCountRef.current >= 10){
-        setMovies([])
-        fetchMovies()
-        notRatedCountRef.current = 0; 
     }
+    // else if(notRatedCountRef.current >= 10){
+    //     setMovies([])
+    //     fetchMovies()
+    //     notRatedCountRef.current = 0; 
+    // }
     
-    displayedMovieIdsRef.current.push(currentMovie.id);
+    displayedMovieIdsRef.current.push(currentMovie?.id);
     
     if(value >= 3){
         setMovies([])
