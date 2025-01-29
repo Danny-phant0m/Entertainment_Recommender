@@ -9,7 +9,7 @@ import { Fade } from "@mui/material";
 import '../styles/posterStyles.css';
 import CircularProgress from "@mui/material/CircularProgress";
 import MovieQuiz from "./quiz";
-import FilterUtils from '../Functions/buildQuizUrl.js'
+import { FilterUtils,buildMovieUrl } from '../Functions/buildQuizUrl.js'
 
 const labels = {
   1: 'Terrible',
@@ -62,6 +62,7 @@ const MovieCard = () => {
   const apiSourceRef = useRef("similar"); // Track API source
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [quizAnswers, setQuizAnswers] = useState({});
+  const [ endOfPages, setEndOfPages ] = useState(false);
 
   const handleQuizComplete = (answers) => {
     setQuizAnswers(answers);
@@ -70,13 +71,21 @@ const MovieCard = () => {
   };
 
   const fetchMovies = useCallback(() => {
-    //const randomYear = Math.floor(Math.random() * (2025 - 1980 + 1)) + 1980; // Random year between 1980 and 2025
     const queryString = FilterUtils.toQueryString(FilterUtils.buildFilters(quizAnswers));
+    const match = queryString.match(/primary_release_year=(\d+)-(\d+)/);
+    const startYear = match ? match[1] : null;
+    const endYear = match ? match[2] : null;
+    const randomYear = Math.floor(Math.random() * (endYear - startYear + 1)) + startYear; 
+    console.log(startYear, endYear);
     console.log(queryString)
-    fetch(
-      `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&${queryString}&page=${page}`,
-      options
-    )
+    let url
+    if(endOfPages){
+      url = buildMovieUrl({ type: "year", year: randomYear, page: page});
+    }else{  
+      url = buildMovieUrl({ type: "discover", queryString: queryString, page: page});
+    }
+
+    fetch(url,options)
       .then((res) => res.json())
       .then((data) => {
         const filteredMovies = data.results.filter(
@@ -92,7 +101,7 @@ const MovieCard = () => {
         console.error(err);
         setLoading(false);
       });
-  }, [page,quizAnswers]);
+  }, [page,quizAnswers,endOfPages]);
 
   
   useEffect(() => {
@@ -110,6 +119,7 @@ const MovieCard = () => {
       setPage((prevPage) => prevPage + 1);
       setQuizAnswers({})
     } else {
+      setEndOfPages(true);
       setPage(1);
     }
   };

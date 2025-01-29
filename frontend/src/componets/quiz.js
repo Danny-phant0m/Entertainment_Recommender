@@ -83,7 +83,7 @@ const MovieQuiz = ({ onQuizComplete }) => {
     {
       question: 'What’s your preference on movie release years?',
       options: ['I like watching new releases', ' I prefer older classics', 'A mix of both'],
-      key: 'mood',
+      key: 'preference',
     },
     {
       question: 'Do you like movies with:',

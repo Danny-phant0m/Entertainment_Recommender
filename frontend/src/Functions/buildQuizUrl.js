@@ -67,11 +67,11 @@
         // }
       
         // Filter for decade (we use the decade to set the release year range)
-        // if (quizAnswers.decade) {
-        //   const decadeStart = quizAnswers.decade.substring(0, 4);
-        //   const decadeEnd = (parseInt(decadeStart) + 9).toString();
-        //   filters.primary_release_year = `${decadeStart}-${decadeEnd}`; // Construct the range for the decade
-        // }
+        if (quizAnswers.decade) {
+          const decadeStart = quizAnswers.decade.substring(0, 4);
+          const decadeEnd = (parseInt(decadeStart) + 5).toString();
+          filters.primary_release_year = `${decadeStart}-${decadeEnd}`; // Construct the range for the decade
+        }
       
         // // Filter for style (can be added to keywords)
         // if (quizAnswers.style) {
@@ -102,5 +102,23 @@
         return filters;
     },
   };
+
+  const buildMovieUrl = ({ type, currentMovie, queryString, year, page  }) => {
+    const base = "https://api.themoviedb.org/3/";
+    
+    if (type === "similar" && currentMovie?.id) {
+      return `${base}movie/${currentMovie.id}/similar?language=en-US&page=${page}`;
+    }
   
-  export default FilterUtils;  
+    if (type === "discover" && queryString) {
+      return `${base}discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=popularity.desc&${queryString}&page=${page}`;
+    }
+  
+    if (type === "year" && year) {
+      return `${base}discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=popularity.desc&year=${year}`;
+    }
+  
+    return null;
+  };
+  
+  export {FilterUtils, buildMovieUrl};  
