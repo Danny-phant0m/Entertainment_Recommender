@@ -9,6 +9,7 @@ import { Fade } from "@mui/material";
 import '../styles/posterStyles.css';
 import CircularProgress from "@mui/material/CircularProgress";
 import MovieQuiz from "./quiz";
+import FilterUtils from '../Functions/buildQuizUrl.js'
 
 const labels = {
   1: 'Terrible',
@@ -60,19 +61,20 @@ const MovieCard = () => {
   const currentMovie = movies[currentMovieIndex];
   const apiSourceRef = useRef("similar"); // Track API source
   const [quizCompleted, setQuizCompleted] = useState(false);
-  const [quizAnswers, setQuizAnswers] = useState(null);
+  const [quizAnswers, setQuizAnswers] = useState({});
 
   const handleQuizComplete = (answers) => {
     setQuizAnswers(answers);
     setQuizCompleted(true);
-    console.log(quizAnswers)
     console.log("The quiz answers", answers)
   };
 
   const fetchMovies = useCallback(() => {
-    const randomYear = Math.floor(Math.random() * (2025 - 1980 + 1)) + 1980; // Random year between 1980 and 2025
+    //const randomYear = Math.floor(Math.random() * (2025 - 1980 + 1)) + 1980; // Random year between 1980 and 2025
+    const queryString = FilterUtils.toQueryString(FilterUtils.buildFilters(quizAnswers));
+    console.log(queryString)
     fetch(
-      `https://api.themoviedb.org/3/discover/movie?primary_release_year=${randomYear}&include_adult=false&include_video=false&language=en-US&page=${page}&sort_by=popularity.desc`,
+      `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&${queryString}&page=${page}`,
       options
     )
       .then((res) => res.json())
@@ -88,7 +90,7 @@ const MovieCard = () => {
         console.error(err);
         setLoading(false);
       });
-  }, [page]);
+  }, [page,quizAnswers]);
 
   
   useEffect(() => {

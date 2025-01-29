@@ -104,7 +104,7 @@ const MovieQuiz = ({ onQuizComplete }) => {
       question: 'Do you have a favorite director?',
       options: ['Steven Spielberg', 'Quentin Tarantino', 'Christopher Nolan', 'Martin Scorsese', 'Greta Gerwig', 'None of these'],
       key: 'director',
-    },
+    },  
     {
       question: 'Do you have a favorite actor?',
       options: ['Dwayne Johnson', 'Leonardo DiCaprio', 'Robert De Niro', 'Denzel Washington', 'Will Smith','Tom Cruise','Jackie Chan','None of these' ],
