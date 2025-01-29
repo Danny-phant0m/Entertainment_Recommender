@@ -73,13 +73,14 @@ const MovieCard = () => {
   const fetchMovies = useCallback(() => {
     const queryString = FilterUtils.toQueryString(FilterUtils.buildFilters(quizAnswers));
     const match = queryString.match(/primary_release_year=(\d+)-(\d+)/);
-    const startYear = match ? match[1] : null;
-    const endYear = match ? match[2] : null;
-    const randomYear = Math.floor(Math.random() * (endYear - startYear + 1)) + startYear; 
+    const startYear = match ? parseInt(match[1], 10) : null;
+    const endYear = match ? parseInt(match[2], 10) : null;
+    const randomYear = startYear && endYear ? Math.floor(Math.random() * (endYear - startYear + 1)) + startYear : null;  
     console.log(startYear, endYear);
     console.log(queryString)
     let url
     if(endOfPages){
+      console.log("Random year",randomYear)
       url = buildMovieUrl({ type: "year", year: randomYear, page: page});
     }else{  
       url = buildMovieUrl({ type: "discover", queryString: queryString, page: page});
@@ -145,18 +146,17 @@ const MovieCard = () => {
         setMovies([])
         fetchMovies()
         notRatedCountRef.current = 0; 
+    }else if(notRatedCountRef.current >= 10){
+        setMovies([])
+        setEndOfPages(true)
+        notRatedCountRef.current = 0; 
     }
-    // else if(notRatedCountRef.current >= 10){
-    //     setMovies([])
-    //     fetchMovies()
-    //     notRatedCountRef.current = 0; 
-    // }
     
     displayedMovieIdsRef.current.push(currentMovie?.id);
-    
     if(value >= 3){
         setMovies([])
-        fetch(`https://api.themoviedb.org/3/movie/${currentMovie.id}/similar?language=en-US&page=${page}`, options)
+        const url = buildMovieUrl({ type: "similar", currentMovie:currentMovie.id , page: page});
+        fetch(url, options)
         .then((res) => res.json())
         .then((data) => {
             getCast(data.results,setCastNames)

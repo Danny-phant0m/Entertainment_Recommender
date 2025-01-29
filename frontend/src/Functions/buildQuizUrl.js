@@ -69,7 +69,7 @@
         // Filter for decade (we use the decade to set the release year range)
         if (quizAnswers.decade) {
           const decadeStart = quizAnswers.decade.substring(0, 4);
-          const decadeEnd = (parseInt(decadeStart) + 5).toString();
+          const decadeEnd = (parseInt(decadeStart) + 9).toString();
           filters.primary_release_year = `${decadeStart}-${decadeEnd}`; // Construct the range for the decade
         }
       
