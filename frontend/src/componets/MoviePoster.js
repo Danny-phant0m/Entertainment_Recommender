@@ -73,6 +73,7 @@ const MovieCard = () => {
     //const randomYear = Math.floor(Math.random() * (2025 - 1980 + 1)) + 1980; // Random year between 1980 and 2025
     const queryString = FilterUtils.toQueryString(FilterUtils.buildFilters(quizAnswers));
     console.log(queryString)
+    console.log(page)
     fetch(
       `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&${queryString}&page=${page}`,
       options
