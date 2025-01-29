@@ -115,7 +115,7 @@
     }
   
     if (type === "year" && year) {
-      return `${base}discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=popularity.desc&year=${year}`;
+      return `${base}discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=popularity.desc&primary_release_year=${year}`;
     }
   
     return null;

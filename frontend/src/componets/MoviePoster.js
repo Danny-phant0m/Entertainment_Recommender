@@ -11,6 +11,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import MovieQuiz from "./quiz";
 import { FilterUtils,buildMovieUrl } from '../Functions/buildQuizUrl.js'
 
+
 const labels = {
   1: 'Terrible',
   2: 'Poor',
@@ -63,6 +64,7 @@ const MovieCard = () => {
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [quizAnswers, setQuizAnswers] = useState({});
   const [ endOfPages, setEndOfPages ] = useState(false);
+  const [totalPages, setTotalPages] = useState(0); // track total pages
 
   const handleQuizComplete = (answers) => {
     setQuizAnswers(answers);
@@ -75,7 +77,7 @@ const MovieCard = () => {
     const match = queryString.match(/primary_release_year=(\d+)-(\d+)/);
     const startYear = match ? parseInt(match[1], 10) : null;
     const endYear = match ? parseInt(match[2], 10) : null;
-    const randomYear = startYear && endYear ? Math.floor(Math.random() * (endYear - startYear + 1)) + startYear : null;  
+    const randomYear = Math.floor(Math.random() * (Number(endYear) - Number(startYear) + 1)) + Number(startYear);
     console.log(startYear, endYear);
     console.log(queryString)
     let url
@@ -97,6 +99,8 @@ const MovieCard = () => {
         setCurrentMovieIndex(0);
         console.log(filteredMovies)
         getCast(data.results, setCastNames);
+        setTotalPages(data.total_pages);
+        console.log(data.total_pages)
       })
       .catch((err) => {
         console.error(err);
@@ -115,10 +119,9 @@ const MovieCard = () => {
   
   const loadMoreMovies = () => {
     setCurrentMovieIndex(0); // Reset to the first movie
-    setMovies([]); // Clear the current movie data
-    if (page < movies.total_pages) {
+    if (page < totalPages) {
+      setMovies([]); // Clear the current movie data
       setPage((prevPage) => prevPage + 1);
-      setQuizAnswers({})
     } else {
       setEndOfPages(true);
       setPage(1);
@@ -146,11 +149,12 @@ const MovieCard = () => {
         setMovies([])
         fetchMovies()
         notRatedCountRef.current = 0; 
-    }else if(notRatedCountRef.current >= 10){
-        setMovies([])
-        setEndOfPages(true)
-        notRatedCountRef.current = 0; 
     }
+    // else if(notRatedCountRef.current >= 10){
+    //     setEndOfPages(true)
+    //     setMovies([])
+    //     notRatedCountRef.current = 0; 
+    // }
     
     displayedMovieIdsRef.current.push(currentMovie?.id);
     if(value >= 3){
