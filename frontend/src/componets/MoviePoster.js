@@ -66,6 +66,7 @@ const MovieCard = () => {
     setQuizAnswers(answers);
     setQuizCompleted(true);
     console.log(quizAnswers)
+    console.log("The quiz answers", answers)
   };
 
   const fetchMovies = useCallback(() => {

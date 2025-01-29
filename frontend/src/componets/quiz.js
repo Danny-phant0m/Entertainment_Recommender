@@ -30,9 +30,9 @@ const useStyles = makeStyles({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
-    top: '10%',
-    left: '30%',
-    bottom: '10%',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
   },
   questionNumber: {
     color: 'white', 
@@ -130,8 +130,25 @@ const MovieQuiz = ({ onQuizComplete }) => {
   };
 
   const handleAnswerChange = (event) => {
-    setAnswers({ ...answers, [questions[currentQuestionIndex].key]: event.target.value });
+    const choice = event.target.value;
+    const key = questions[currentQuestionIndex].key;
+  
+    // For genre and mood, store as an array (multiple choices)
+    if (key === 'genre' || key === 'mood') {
+      const prevChoices = answers[key] || [];
+  
+      // Add or remove choice from the list
+      const updatedChoices = prevChoices.includes(choice)
+        ? prevChoices.filter(item => item !== choice) // Remove if already selected
+        : [...prevChoices, choice]; // Add if not selected
+  
+      setAnswers({ ...answers, [key]: updatedChoices });
+    } else {
+      // For other questions, just store the single choice
+      setAnswers({ ...answers, [key]: choice });
+    }
   };
+  
   const key = questions[currentQuestionIndex].key
   const GroupComponent = key === 'genre' | key === 'mood' ? FormGroup : RadioGroup;
   return (
