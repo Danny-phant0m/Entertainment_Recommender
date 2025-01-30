@@ -74,9 +74,12 @@ const MovieCard = () => {
 
   const fetchMovies = useCallback(() => {
     const queryString = FilterUtils.toQueryString(FilterUtils.buildFilters(quizAnswers));
-    const match = queryString.match(/primary_release_year=(\d+)-(\d+)/);
-    const startYear = match ? parseInt(match[1], 10) : null;
-    const endYear = match ? parseInt(match[2], 10) : null;
+    const matchGte = queryString.match(/primary_release_date\.gte=(\d{4})-01-01/);
+    const matchLte = queryString.match(/primary_release_date\.lte=(\d{4})-12-31/);
+
+    const startYear = matchGte ? parseInt(matchGte[1], 10) : null;
+    const endYear = matchLte ? parseInt(matchLte[1], 10) : null;
+    
     const randomYear = Math.floor(Math.random() * (Number(endYear) - Number(startYear) + 1)) + Number(startYear);
     console.log(startYear, endYear);
     console.log(queryString)
@@ -150,11 +153,14 @@ const MovieCard = () => {
         fetchMovies()
         notRatedCountRef.current = 0; 
     }
-    // else if(notRatedCountRef.current >= 10){
-    //     setEndOfPages(true)
-    //     setMovies([])
-    //     notRatedCountRef.current = 0; 
-    // }
+    else if(notRatedCountRef.current >= 10 && apiSourceRef.current === "discover"){
+      // const randomBool = Math.random() < 0.5;
+      // console.log(randomBool)
+        setMovies([])
+        setEndOfPages(true)
+        fetchMovies()
+        notRatedCountRef.current = 0;         
+    }
     
     displayedMovieIdsRef.current.push(currentMovie?.id);
     if(value >= 3){
