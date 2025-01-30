@@ -57,7 +57,7 @@ const MovieCard = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [ratings, setRatings] = useState([]); 
-  const notRatedCountRef = useRef(0);  
+  const notRatedCountRef = useRef(0); // stores the each time a user does not rate a movie
   const displayedMovieIdsRef = useRef([]);
   const currentMovie = movies[currentMovieIndex];
   const apiSourceRef = useRef("similar"); // Track API source
@@ -79,7 +79,7 @@ const MovieCard = () => {
 
     const startYear = matchGte ? parseInt(matchGte[1], 10) : null;
     const endYear = matchLte ? parseInt(matchLte[1], 10) : null;
-    
+
     const randomYear = Math.floor(Math.random() * (Number(endYear) - Number(startYear) + 1)) + Number(startYear);
     console.log(startYear, endYear);
     console.log(queryString)
@@ -97,6 +97,9 @@ const MovieCard = () => {
         const filteredMovies = data.results.filter(
           (movie) => !displayedMovieIdsRef.current.includes(movie.id)
         );
+        if (data.results.length === 0) {
+          setEndOfPages(true);
+        }
         apiSourceRef.current = "discover";
         setMovies(filteredMovies);
         setCurrentMovieIndex(0);

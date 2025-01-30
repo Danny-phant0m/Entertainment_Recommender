@@ -60,7 +60,7 @@ const MovieQuiz = ({ onQuizComplete }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(false);
-  const totalQuestions = 10;
+  const totalQuestions = 6;
   const [fadeIn, setFadeIn] = useState(true);
   const classes = useStyles();
 
@@ -74,26 +74,6 @@ const MovieQuiz = ({ onQuizComplete }) => {
       question: 'Which decade of movies do you prefer?',
       options: ['1980s', '1990s', '2000s', '2010s', '2020s'],
       key: 'decade',
-    },
-    {
-      question: 'What is the last movie you watched?',
-      options: [' Something new and recent', 'A classic movie', 'A documentary or biographical film', 'A foreign language film'],
-      key: 'movie_type',
-    },
-    {
-      question: 'What’s your preference on movie release years?',
-      options: ['I like watching new releases', ' I prefer older classics', 'A mix of both'],
-      key: 'preference',
-    },
-    {
-      question: 'Do you like movies with:',
-      options: ['Fast-paced action', 'Slow-burn plots', 'Mix of both', 'Character-driven stories', 'Mysteries'],
-      key: 'style',
-    },
-    {
-      question: 'What’s your preferred movie mood?',
-      options: ['Funny', 'Emotional', 'Thrilling', 'Dark', 'Relaxing','Inspiring','Mysterious'],
-      key: 'mood',
     },
     {
       question: 'What is your preferred movie ratings?',
