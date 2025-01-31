@@ -37,7 +37,7 @@ const getCast = (data,setCastNames) => {
     fetch(`https://api.themoviedb.org/3/movie/${movie.id}/credits?language=en-US`, options)
             .then((res) => res.json())
             .then((creditsData) => {
-              const top4Cast = creditsData.cast.slice(0, 4).map((member) => member.name); // Get first 4 cast names
+              const top4Cast = creditsData.cast?.slice(0, 4).map((member) => member.name) || [];// Get first 4 cast names
               setCastNames((prevCasts) => ({
                 ...prevCasts,
                 [movie.id]: top4Cast,
@@ -69,10 +69,9 @@ const MovieCard = () => {
   const handleQuizComplete = (answers) => {
     setQuizAnswers(answers);
     setQuizCompleted(true);
-    console.log("The quiz answers", answers)
   };
 
-  const fetchMovies = useCallback(() => {
+  const fetchMovies = useCallback(async() => {
     const queryString = FilterUtils.toQueryString(FilterUtils.buildFilters(quizAnswers));
     const matchGte = queryString.match(/primary_release_date\.gte=(\d{4})-01-01/);
     const matchLte = queryString.match(/primary_release_date\.lte=(\d{4})-12-31/);
@@ -81,32 +80,29 @@ const MovieCard = () => {
     const endYear = matchLte ? parseInt(matchLte[1], 10) : null;
 
     const randomYear = Math.floor(Math.random() * (Number(endYear) - Number(startYear) + 1)) + Number(startYear);
-    console.log(startYear, endYear);
-    console.log(queryString)
+    const randomOrder = Math.random() < 0.5 ? 'desc' : 'asc';
+
     let url
+
     if(endOfPages){
-      console.log("Random year",randomYear)
-      url = buildMovieUrl({ type: "year", year: randomYear, page: page});
-    }else{  
+      url = buildMovieUrl({ type: "year", year: randomYear, page: page, order: randomOrder});
+    }else if(quizAnswers.favorite_movie){
+      url = buildMovieUrl({ type: "search", movieName: quizAnswers.favorite_movie, page:page});
+    }else {  
       url = buildMovieUrl({ type: "discover", queryString: queryString, page: page});
     }
-
     fetch(url,options)
       .then((res) => res.json())
       .then((data) => {
         const filteredMovies = data.results.filter(
           (movie) => !displayedMovieIdsRef.current.includes(movie.id)
-        );
-        if (data.results.length === 0) {
-          setEndOfPages(true);
-        }
+        );      
         apiSourceRef.current = "discover";
         setMovies(filteredMovies);
         setCurrentMovieIndex(0);
         console.log(filteredMovies)
         getCast(data.results, setCastNames);
         setTotalPages(data.total_pages);
-        console.log(data.total_pages)
       })
       .catch((err) => {
         console.error(err);
@@ -114,7 +110,6 @@ const MovieCard = () => {
       });
   }, [page,quizAnswers,endOfPages]);
 
-  
   useEffect(() => {
     fetchMovies();
   }, [fetchMovies]);
@@ -124,9 +119,11 @@ const MovieCard = () => {
   }
   
   const loadMoreMovies = () => {
+    console.log("The total pages we have ",totalPages)
+    console.log("the current page number ",page)
     setCurrentMovieIndex(0); // Reset to the first movie
     if (page < totalPages) {
-      setMovies([]); // Clear the current movie data
+      // setMovies([]); // Clear the current movie data
       setPage((prevPage) => prevPage + 1);
     } else {
       setEndOfPages(true);

@@ -76,22 +76,27 @@
     },
   };
 
-  const buildMovieUrl = ({ type, currentMovie, queryString, year, page  }) => {
+  const buildMovieUrl = ({ type, currentMovie, queryString, year, page, order,search, movieName}) => {
     const base = "https://api.themoviedb.org/3/";
-    
-    if (type === "similar" && currentMovie?.id) {
-      return `${base}movie/${currentMovie.id}/similar?language=en-US&page=${page}`;
+
+    if (type === "similar" && currentMovie) {
+      return `${base}movie/${currentMovie}/similar?language=en-US&page=${page}`;
     }
   
     if (type === "discover" && queryString) {
       return `${base}discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=popularity.desc&${queryString}&page=${page}`;
     }
   
-    if (type === "year" && year) {
-      return `${base}discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=popularity.desc&primary_release_year=${year}`;
+    if (type === "year" && year && order) {
+      return `${base}discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=popularity.${order}&primary_release_year=${year}`;
+    }
+
+    if (type === "search" && movieName) {
+        return `${base}search/movie?query=${encodeURIComponent(movieName)}&include_adult=false&language=en-US&page=${page}`;
     }
   
     return null;
   };
+  
   
   export {FilterUtils, buildMovieUrl};  
