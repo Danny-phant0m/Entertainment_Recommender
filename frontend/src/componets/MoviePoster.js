@@ -111,9 +111,7 @@ const MovieCard = () => {
           }
           return;
       }
-        const filteredMovies = data.results.filter(
-          (movie) => !displayedMovieIdsRef.current.includes(movie.id)
-        );      
+      const filteredMovies = data.results.filter((movie) => movie.backdrop_path && !displayedMovieIdsRef.current.includes(movie.id)); 
         setMovies(filteredMovies);
         setCurrentMovieIndex(0);
         console.log(filteredMovies)
@@ -259,7 +257,7 @@ const MovieCard = () => {
       setLoading(false); // Stop loading
   };
 
-  const date = new Date(currentMovie.release_date);
+  const date = new Date(currentMovie?.release_date);
   const formattedDate = date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
   return (
