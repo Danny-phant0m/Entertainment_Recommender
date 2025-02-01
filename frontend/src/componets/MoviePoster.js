@@ -65,6 +65,7 @@ const MovieCard = () => {
   const [quizAnswers, setQuizAnswers] = useState({});
   const [ endOfPages, setEndOfPages ] = useState(false);
   const [totalPages, setTotalPages] = useState(0); // track total pages
+  const [showFavMovie, setShowFavMovie] = useState(true)
 
   const handleQuizComplete = (answers) => {
     setQuizAnswers(answers);
@@ -82,22 +83,37 @@ const MovieCard = () => {
     const randomYear = Math.floor(Math.random() * (Number(endYear) - Number(startYear) + 1)) + Number(startYear);
     const randomOrder = Math.random() < 0.5 ? 'desc' : 'asc';
 
-    let url
+    let url;
 
     if(endOfPages){
+      console.log("End of pages now showing")
+      apiSourceRef.current = "similar" 
       url = buildMovieUrl({ type: "year", year: randomYear, page: page, order: randomOrder});
-    }else if(quizAnswers.favorite_movie){
+
+    }else if(quizAnswers.favorite_movie && showFavMovie){
+      console.log("Similar movies to the users movie now showing")
+      apiSourceRef.current = "search"
       url = buildMovieUrl({ type: "search", movieName: quizAnswers.favorite_movie, page:page});
-    }else {  
+
+    }else if(!endOfPages && !showFavMovie){  
+      console.log("Discover movies with users query now showing")
+      apiSourceRef.current = "discover"
       url = buildMovieUrl({ type: "discover", queryString: queryString, page: page});
     }
+
     fetch(url,options)
       .then((res) => res.json())
       .then((data) => {
+        if (!data.results || data.results.length === 0) {
+          if (!endOfPages) {
+              console.log("I am null, running");
+              setEndOfPages(true);
+          }
+          return;
+      }
         const filteredMovies = data.results.filter(
           (movie) => !displayedMovieIdsRef.current.includes(movie.id)
         );      
-        apiSourceRef.current = "discover";
         setMovies(filteredMovies);
         setCurrentMovieIndex(0);
         console.log(filteredMovies)
@@ -108,7 +124,7 @@ const MovieCard = () => {
         console.error(err);
         setLoading(false);
       });
-  }, [page,quizAnswers,endOfPages]);
+  }, [page,quizAnswers,showFavMovie, endOfPages]);
 
   useEffect(() => {
     fetchMovies();
@@ -123,9 +139,11 @@ const MovieCard = () => {
     console.log("the current page number ",page)
     setCurrentMovieIndex(0); // Reset to the first movie
     if (page < totalPages) {
-      // setMovies([]); // Clear the current movie data
       setPage((prevPage) => prevPage + 1);
-    } else {
+    } else if(showFavMovie) {
+      setShowFavMovie(false);
+      setEndOfPages(false)
+    }else{
       setEndOfPages(true);
       setPage(1);
     }
@@ -148,16 +166,24 @@ const MovieCard = () => {
     } else {
         notRatedCountRef.current = 0; 
     }
+    console.log("No rated ",notRatedCountRef.current)
     if (notRatedCountRef.current >= 5  && apiSourceRef.current === "similar") {
         setMovies([])
         fetchMovies()
         notRatedCountRef.current = 0; 
     }
     else if(notRatedCountRef.current >= 10 && apiSourceRef.current === "discover"){
-      // const randomBool = Math.random() < 0.5;
-      // console.log(randomBool)
+      console.log("The number of not rated", notRatedCountRef.current)
         setMovies([])
         setEndOfPages(true)
+        fetchMovies()
+        notRatedCountRef.current = 0;         
+
+    }else if(notRatedCountRef.current >= 10 && apiSourceRef.current === "search"){
+      console.log("The number of not rated", notRatedCountRef.current)
+        setMovies([])
+        setShowFavMovie(false);
+        setEndOfPages(false);
         fetchMovies()
         notRatedCountRef.current = 0;         
     }
@@ -169,6 +195,11 @@ const MovieCard = () => {
         fetch(url, options)
         .then((res) => res.json())
         .then((data) => {
+          if (!data.results || data.results.length === 0) {
+            fetchMovies();
+            notRatedCountRef.current = 0;
+            return;
+          }
             getCast(data.results,setCastNames)
             const filteredMovies = data.results.filter(
                 (movie) => !displayedMovieIdsRef.current.includes(movie.id)
