@@ -51,7 +51,7 @@
             filters.with_genres = genreIds.join('|');
         }
         
-        // Filter for cast
+        // Filter for crew
         if (quizAnswers.cast !== 'None of these' && quizAnswers.director !== 'None of these') {
             filters.with_crew = `${peopleMap.cast[quizAnswers.cast]}|${peopleMap.directors[quizAnswers.director]}`;
         }else if (quizAnswers.cast !== 'None of these') {

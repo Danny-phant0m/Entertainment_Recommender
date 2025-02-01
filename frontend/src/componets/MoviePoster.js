@@ -60,7 +60,7 @@ const MovieCard = () => {
   const notRatedCountRef = useRef(0); // stores the each time a user does not rate a movie
   const displayedMovieIdsRef = useRef([]);
   const currentMovie = movies[currentMovieIndex];
-  const apiSourceRef = useRef("similar"); // Track API source
+  const apiSourceRef = useRef(""); // Track API source
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [quizAnswers, setQuizAnswers] = useState({});
   const [ endOfPages, setEndOfPages ] = useState(false);
@@ -100,7 +100,6 @@ const MovieCard = () => {
       apiSourceRef.current = "discover"
       url = buildMovieUrl({ type: "discover", queryString: queryString, page: page});
     }
-
     fetch(url,options)
       .then((res) => res.json())
       .then((data) => {
@@ -110,8 +109,8 @@ const MovieCard = () => {
               setEndOfPages(true);
           }
           return;
-      }
-      const filteredMovies = data.results.filter((movie) => movie.backdrop_path && !displayedMovieIdsRef.current.includes(movie.id)); 
+      }    
+        const filteredMovies = data.results.filter((movie) => movie.backdrop_path && !displayedMovieIdsRef.current.includes(movie.id)); 
         setMovies(filteredMovies);
         setCurrentMovieIndex(0);
         console.log(filteredMovies)
@@ -178,10 +177,10 @@ const MovieCard = () => {
         notRatedCountRef.current = 0;         
 
     }else if(notRatedCountRef.current >= 10 && apiSourceRef.current === "search"){
-      console.log("The number of not rated", notRatedCountRef.current)
-        setMovies([])
+      console.log("The number of not rated for search", notRatedCountRef.current)
         setShowFavMovie(false);
         setEndOfPages(false);
+        setMovies([])
         fetchMovies()
         notRatedCountRef.current = 0;         
     }
@@ -288,7 +287,7 @@ const MovieCard = () => {
           {currentMovie && (
             <div className="movie-info-box">
               <h1>{currentMovie.title}</h1>
-              <p1>Release Date: {formattedDate}</p1>
+              <p>Release Date: {formattedDate}</p>
               <p>{currentMovie.overview}</p>
               {/* Check if current movie ID matches and show cast names */}
               {castNames[currentMovie.id] && (
