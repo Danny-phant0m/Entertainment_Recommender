@@ -259,6 +259,9 @@ const MovieCard = () => {
       setLoading(false); // Stop loading
   };
 
+  const date = new Date(currentMovie.release_date);
+  const formattedDate = date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+
   return (
     <div
       className="movie-card-container"
@@ -287,6 +290,7 @@ const MovieCard = () => {
           {currentMovie && (
             <div className="movie-info-box">
               <h1>{currentMovie.title}</h1>
+              <p1>Release Date: {formattedDate}</p1>
               <p>{currentMovie.overview}</p>
               {/* Check if current movie ID matches and show cast names */}
               {castNames[currentMovie.id] && (
