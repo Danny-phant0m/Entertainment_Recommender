@@ -87,14 +87,12 @@ const MovieCard = () => {
 
     if(endOfPages){
       console.log("End of pages now showing")
-      apiSourceRef.current = "similar" 
+      // apiSourceRef.current = "similar" 
       url = buildMovieUrl({ type: "year", year: randomYear, page: page, order: randomOrder});
-
     }else if(quizAnswers.favorite_movie && showFavMovie){
       console.log("Similar movies to the users movie now showing")
       apiSourceRef.current = "search"
       url = buildMovieUrl({ type: "search", movieName: quizAnswers.favorite_movie, page:page});
-
     }else if(!endOfPages && !showFavMovie){  
       console.log("Discover movies with users query now showing")
       apiSourceRef.current = "discover"
@@ -173,15 +171,13 @@ const MovieCard = () => {
       console.log("The number of not rated", notRatedCountRef.current)
         setMovies([])
         setEndOfPages(true)
-        fetchMovies()
         notRatedCountRef.current = 0;         
 
     }else if(notRatedCountRef.current >= 10 && apiSourceRef.current === "search"){
       console.log("The number of not rated for search", notRatedCountRef.current)
+        setMovies([])
         setShowFavMovie(false);
         setEndOfPages(false);
-        setMovies([])
-        fetchMovies()
         notRatedCountRef.current = 0;         
     }
     
