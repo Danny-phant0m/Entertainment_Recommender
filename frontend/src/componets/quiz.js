@@ -62,6 +62,7 @@ const MovieQuiz = ({ onQuizComplete }) => {
   const [loading, setLoading] = useState(false);
   const totalQuestions = 6;
   const [fadeIn, setFadeIn] = useState(true);
+  const [showExplanation, setShowExplanation] = useState(false);
   const classes = useStyles();
 
   const questions = [
@@ -101,7 +102,10 @@ const MovieQuiz = ({ onQuizComplete }) => {
     setTimeout(() => {
       setLoading(false);
       if (currentQuestionIndex === totalQuestions - 1) {
-        onQuizComplete(answers); // Submit answers and proceed
+        setShowExplanation(true);
+      setTimeout(() => {
+        onQuizComplete(answers); // Complete quiz after showing explanation
+      }, 5000); // Show explanation for 3 seconds
       } else {
         setCurrentQuestionIndex(currentQuestionIndex + 1); // Go to next question
       }
@@ -137,61 +141,73 @@ const MovieQuiz = ({ onQuizComplete }) => {
     <>
       <div className={classes.root} />
       <div className={classes.quizContainer}>
-        <Typography variant="h5" className={classes.questionNumber}>
-          Question {currentQuestionIndex + 1} / {totalQuestions}
-        </Typography>
-        <Fade in={fadeIn} timeout={500}>
-          <Box>
-            <Typography variant="h5" style={{ marginBottom: '40px', color: 'White' }}>
-              {questions[currentQuestionIndex].question}
+        {showExplanation ? (
+          <Typography variant="h6" style={{ color: 'white', textAlign: 'center' }}>
+            After rating 30 movies you've watched, you'll unlock personalized movie recommendations!
+          </Typography>
+        ) : (
+          <>
+            <Typography variant="h5" className={classes.questionNumber}>
+              Question {currentQuestionIndex + 1} / {totalQuestions}
             </Typography>
-            {questions[currentQuestionIndex].key === 'favorite_movie' ? (
-              <TextField
-                variant="outlined"
-                fullWidth
-                placeholder="Enter your favorite movie"
-                value={answers['favorite_movie'] || ''}
-                onChange={handleAnswerChange}
-                style={{ marginBottom: '20px', color: 'black' }}
-                slotProps={{
-                  input: {
-                    maxLength: 100, // Prevents overly long inputs
-                  },
-                }}
-              />
-            ) : (
-            <GroupComponent
-               row={questions[currentQuestionIndex].options.length > 7}
-               name="quiz"
-               value={answers[questions[currentQuestionIndex].key] || ''}
-               onChange={handleAnswerChange}
-               style={{
-                 flexWrap: questions[currentQuestionIndex].options.length > 7 ? 'wrap' : 'nowrap',
-                 justifyContent: 'center',
-               }}
-            >
-              {questions[currentQuestionIndex].options.map((option, index) => (
-                <Paper key={index} className={classes.answerContainer} elevation={3} style={{ borderRadius: '15px', margin: '5px', backgroundColor: 'rgba(255, 255, 255, 0.8)', }}>
-                  <FormControlLabel
-                    value={option}
-                    control={<Control/>}
-                    label={option}
-                    style={{ color: 'black' }}
+            <Fade in={fadeIn} timeout={500}>
+              <Box>
+                <Typography variant="h5" style={{ marginBottom: '40px', color: 'White' }}>
+                  {questions[currentQuestionIndex].question}
+                </Typography>
+                {questions[currentQuestionIndex].key === 'favorite_movie' ? (
+                  <TextField
+                    variant="outlined"
+                    fullWidth
+                    placeholder="Enter your favorite movie"
+                    value={answers['favorite_movie'] || ''}
+                    onChange={handleAnswerChange}
+                    style={{ marginBottom: '20px', color: 'black' }}
+                    slotProps={{
+                      input: {
+                        maxLength: 100,
+                      },
+                    }}
                   />
-                </Paper>
-              ))}
-            </GroupComponent>
-            )}
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleNext}
-              disabled={!answers[questions[currentQuestionIndex].key]}
-            >
-              Next
-            </Button>
-          </Box>
-        </Fade>
+                ) : (
+                  <GroupComponent
+                    row={questions[currentQuestionIndex].options.length > 7}
+                    name="quiz"
+                    value={answers[questions[currentQuestionIndex].key] || ''}
+                    onChange={handleAnswerChange}
+                    style={{
+                      flexWrap: questions[currentQuestionIndex].options.length > 7 ? 'wrap' : 'nowrap',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {questions[currentQuestionIndex].options.map((option, index) => (
+                      <Paper
+                        key={index}
+                        className={classes.answerContainer}
+                        elevation={3}
+                        style={{
+                          borderRadius: '15px',
+                          margin: '5px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                        }}
+                      >
+                        <FormControlLabel value={option} control={<Control />} label={option} style={{ color: 'black' }} />
+                      </Paper>
+                    ))}
+                  </GroupComponent>
+                )}
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleNext}
+                  disabled={!answers[questions[currentQuestionIndex].key]}
+                >
+                  Next
+                </Button>
+              </Box>
+            </Fade>
+          </>
+        )}
       </div>
       {loading && <CircularProgress size={50} className={classes.progress} />}
     </>

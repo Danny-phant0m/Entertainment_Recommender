@@ -73,6 +73,7 @@ const MovieCard = () => {
   };
 
   const fetchMovies = useCallback(async() => {
+
     const queryString = FilterUtils.toQueryString(FilterUtils.buildFilters(quizAnswers));
     const matchGte = queryString.match(/primary_release_date\.gte=(\d{4})-01-01/);
     const matchLte = queryString.match(/primary_release_date\.lte=(\d{4})-12-31/);
@@ -81,14 +82,13 @@ const MovieCard = () => {
     const endYear = matchLte ? parseInt(matchLte[1], 10) : null;
 
     const randomYear = Math.floor(Math.random() * (Number(endYear) - Number(startYear) + 1)) + Number(startYear);
-    const randomOrder = Math.random() < 0.5 ? 'desc' : 'asc';
 
     let url;
 
     if(endOfPages){
       console.log("End of pages now showing")
       // apiSourceRef.current = "similar" 
-      url = buildMovieUrl({ type: "year", year: randomYear, page: page, order: randomOrder});
+      url = buildMovieUrl({ type: "year", year: randomYear, page: page});
     }else if(quizAnswers.favorite_movie && showFavMovie){
       console.log("Similar movies to the users movie now showing")
       apiSourceRef.current = "search"
@@ -98,6 +98,7 @@ const MovieCard = () => {
       apiSourceRef.current = "discover"
       url = buildMovieUrl({ type: "discover", queryString: queryString, page: page});
     }
+    console.log(url)
     fetch(url,options)
       .then((res) => res.json())
       .then((data) => {
@@ -222,7 +223,7 @@ const MovieCard = () => {
       }
     
       // If 10 ratings are collected, send them
-      if (ratings.length + 1 >= 11) {
+      if (ratings.length + 1 >= 20) {
         console.log("Movies rated now sending")
         fetch("http://127.0.0.1:8000/submit_rating/", {
             method: "POST",
