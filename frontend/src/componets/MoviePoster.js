@@ -5,11 +5,12 @@ import Box from '@mui/material/Box';
 import Rating from '@mui/material/Rating';
 import Typography from '@mui/material/Typography';
 import StarIcon from '@mui/icons-material/Star';
-import { Fade } from "@mui/material";
+import { Fade, Button } from "@mui/material";
 import '../styles/posterStyles.css';
 import CircularProgress from "@mui/material/CircularProgress";
 import MovieQuiz from "./quiz";
 import { FilterUtils,buildMovieUrl } from '../Functions/buildQuizUrl.js'
+
 
 
 const labels = {
@@ -66,6 +67,7 @@ const MovieCard = () => {
   const [ endOfPages, setEndOfPages ] = useState(false);
   const [totalPages, setTotalPages] = useState(0); // track total pages
   const [showFavMovie, setShowFavMovie] = useState(true)
+  const [showRecommendationButton, setShowRecommendationButton] = useState(false);
 
   const handleQuizComplete = (answers) => {
     setQuizAnswers(answers);
@@ -223,7 +225,8 @@ const MovieCard = () => {
       }
     
       // If 10 ratings are collected, send them
-      if (ratings.length + 1 >= 20) {
+      if (ratings.length + 1 >= 1) {
+        setShowRecommendationButton(true);
         console.log("Movies rated now sending")
         fetch("http://127.0.0.1:8000/submit_rating/", {
             method: "POST",
@@ -326,6 +329,14 @@ const MovieCard = () => {
             >
             <ArrowForwardIosIcon style={{ color: "white", fontSize: "30px" }} />
             </IconButton>
+            {showRecommendationButton && (
+              <Button
+                variant="contained"
+                color="primary">          
+                Get Recommendations
+              </Button>
+            )}
+
 
           <Box className="rating-box">
             <Typography component="legend">Rate the Movie</Typography>

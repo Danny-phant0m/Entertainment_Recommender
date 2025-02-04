@@ -105,7 +105,7 @@ const MovieQuiz = ({ onQuizComplete }) => {
         setShowExplanation(true);
       setTimeout(() => {
         onQuizComplete(answers); // Complete quiz after showing explanation
-      }, 5000); // Show explanation for 3 seconds
+      }, 5000); // Show explanation for 5 seconds
       } else {
         setCurrentQuestionIndex(currentQuestionIndex + 1); // Go to next question
       }
