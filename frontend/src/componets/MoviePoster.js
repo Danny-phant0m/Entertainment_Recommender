@@ -330,14 +330,12 @@ const MovieCard = () => {
             <ArrowForwardIosIcon style={{ color: "white", fontSize: "30px" }} />
             </IconButton>
             {showRecommendationButton && (
-              <Button
-                variant="contained"
-                color="primary">          
-                Get Recommendations
-              </Button>
+              <div style={{ position: "absolute", top: "5%", right: "5%" }}>
+                <Button variant="contained" color="primary">          
+                  Get Recommendations
+                </Button>
+              </div>
             )}
-
-
           <Box className="rating-box">
             <Typography component="legend">Rate the Movie</Typography>
             <Rating
