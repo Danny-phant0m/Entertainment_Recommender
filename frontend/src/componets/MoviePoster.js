@@ -68,6 +68,7 @@ const MovieCard = () => {
   const [totalPages, setTotalPages] = useState(0); // track total pages
   const [showFavMovie, setShowFavMovie] = useState(true)
   const [showRecommendationButton, setShowRecommendationButton] = useState(false);
+  const [hoverButton, setHoverButton] = useState(false);
 
   const handleQuizComplete = (answers) => {
     setQuizAnswers(answers);
@@ -330,11 +331,22 @@ const MovieCard = () => {
             <ArrowForwardIosIcon style={{ color: "white", fontSize: "30px" }} />
             </IconButton>
             {showRecommendationButton && (
-              <div style={{ position: "absolute", top: "5%", right: "5%" }}>
-                <Button variant="contained" color="primary">          
-                  Get Recommendations
-                </Button>
-              </div>
+              <Button
+                variant="contained"
+                onMouseEnter={() => setHover(true)}
+                onMouseLeave={() => setHover(false)}
+                style={{
+                  position: "absolute",
+                  top: "5%",
+                  right: "5%",
+                  backgroundColor: hover ? "white" : "rgba(0, 0, 0, 0.6)",
+                  color: hover ? "black" : "white",
+                  padding: "10px 20px",
+                  fontSize: "16px",
+                }}
+              >          
+                Get Recommendations
+              </Button>
             )}
           <Box className="rating-box">
             <Typography component="legend">Rate the Movie</Typography>
