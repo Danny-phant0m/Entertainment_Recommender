@@ -333,14 +333,14 @@ const MovieCard = () => {
             {showRecommendationButton && (
               <Button
                 variant="contained"
-                onMouseEnter={() => setHover(true)}
-                onMouseLeave={() => setHover(false)}
+                onMouseEnter={() => setHoverButton(true)}
+                onMouseLeave={() => setHoverButton(false)}
                 style={{
                   position: "absolute",
                   top: "5%",
                   right: "5%",
-                  backgroundColor: hover ? "white" : "rgba(0, 0, 0, 0.6)",
-                  color: hover ? "black" : "white",
+                  backgroundColor: hoverButton ? "white" : "rgba(0, 0, 0, 0.6)",
+                  color: hoverButton ? "black" : "white",
                   padding: "10px 20px",
                   fontSize: "16px",
                 }}
