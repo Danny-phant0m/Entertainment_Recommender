@@ -236,6 +236,7 @@ const MovieCard = () => {
   const ShowRecommendations = () => {
     setLoading(true);
     console.log("Movies rated now sending")
+    const resultsArray = [];
         fetch("http://127.0.0.1:8000/submit_rating/", {
             method: "POST",
             headers: {
@@ -246,20 +247,25 @@ const MovieCard = () => {
             .then((response) => response.json())
             .then((data) => {
                 console.log("Recommended movies:", data.recommended_movies);
-            //   const movieNames = ["Sonic", "Avatar", "Inception"];
+              const movieNames = data.recommended_movies;
 
-            // movieNames.forEach((movieName) => {
-            //   fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(movieName)}&include_adult=false&language=en-US&page=1`, options)
-            //     .then(res => res.json())
-            //     .then(res => console.log(movieName, res))
-            //     .catch(err => console.error(err));
-            // });
+              movieNames.forEach((movieName) => {
+                fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(movieName)}&include_adult=false&language=en-US&page=1`, options)
+                  .then(res => res.json())
+                  .then(res => { 
+                    console.log(movieName, res.results[0])      
+                    resultsArray.push(res.results[0]);
+                  })
+                  .catch(err => console.error(err));
+              });
+              setLoading(false)
             })
             .catch((error) => {
               console.error("Error submitting rating:", error);
             });
+        console.log(resultsArray)
+        // navigate("/recommendations", { state: { resultsArray} });
         setRatings([]);
-        //navigate("/recommendations", { state: { movies } });
 }
 
   const date = new Date(currentMovie?.release_date);
