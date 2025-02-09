@@ -10,7 +10,7 @@ import '../styles/posterStyles.css';
 import CircularProgress from "@mui/material/CircularProgress";
 import MovieQuiz from "./quiz";
 import { FilterUtils,buildMovieUrl } from '../Functions/buildQuizUrl.js'
-
+import { useNavigate } from "react-router-dom";
 
 
 const labels = {
@@ -49,6 +49,7 @@ const getCast = (data,setCastNames) => {
 }
 
 const MovieCard = () => {
+  const navigate = useNavigate();
   const [movies, setMovies] = useState([]);
   const [currentMovieIndex, setCurrentMovieIndex] = useState(0);
   const [value, setValue] = React.useState(5);
@@ -107,7 +108,6 @@ const MovieCard = () => {
       .then((data) => {
         if (!data.results || data.results.length === 0) {
           if (!endOfPages) {
-              console.log("I am null, running");
               setEndOfPages(true);
           }
           return;
@@ -225,8 +225,8 @@ const MovieCard = () => {
         setRatings((prev) => [...prev, { movieId: currentMovie.id, rating: value }]);
       }
     
-      // If 10 ratings are collected, send them
-      if (ratings.length + 1 >= 1) {
+      // If 30 ratings are collected, send them
+      if (ratings.length + 1 >= 31) {
         setShowRecommendationButton(true);
         console.log("Movies rated now sending")
         fetch("http://127.0.0.1:8000/submit_rating/", {
@@ -335,6 +335,10 @@ const MovieCard = () => {
                 variant="contained"
                 onMouseEnter={() => setHoverButton(true)}
                 onMouseLeave={() => setHoverButton(false)}
+                onClick={() => {
+                  setLoading(true);
+                  navigate("/recommendations");
+                }}
                 style={{
                   position: "absolute",
                   top: "5%",
