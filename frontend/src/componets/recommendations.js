@@ -1,7 +1,10 @@
 import React from 'react';
 import { Box, Card, CardMedia, CardContent, Typography } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 
-const Recommendations = ({ movies }) => {
+const Recommendations = () => {
+    const { state } = useLocation();
+    const movies = state?.movies || [];
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 2, p: 2 }}>
       {movies.map((movie) => (

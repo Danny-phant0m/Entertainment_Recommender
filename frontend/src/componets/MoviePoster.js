@@ -235,7 +235,6 @@ const MovieCard = () => {
 
   const ShowRecommendations = () => {
     setLoading(true);
-    navigate("/recommendations");
     console.log("Movies rated now sending")
         fetch("http://127.0.0.1:8000/submit_rating/", {
             method: "POST",
@@ -260,7 +259,8 @@ const MovieCard = () => {
               console.error("Error submitting rating:", error);
             });
         setRatings([]);
-  }
+        //navigate("/recommendations", { state: { movies } });
+}
 
   const date = new Date(currentMovie?.release_date);
   const formattedDate = date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
