@@ -228,7 +228,15 @@ const MovieCard = () => {
       // If 30 ratings are collected, send them
       if (ratings.length + 1 >= 31) {
         setShowRecommendationButton(true);
-        console.log("Movies rated now sending")
+      }
+      setFadeIn(true); // Trigger fade-in
+      setLoading(false); // Stop loading
+  };
+
+  const ShowRecommendations = () => {
+    setLoading(true);
+    navigate("/recommendations");
+    console.log("Movies rated now sending")
         fetch("http://127.0.0.1:8000/submit_rating/", {
             method: "POST",
             headers: {
@@ -252,10 +260,7 @@ const MovieCard = () => {
               console.error("Error submitting rating:", error);
             });
         setRatings([]);
-      }
-      setFadeIn(true); // Trigger fade-in
-      setLoading(false); // Stop loading
-  };
+  }
 
   const date = new Date(currentMovie?.release_date);
   const formattedDate = date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
@@ -335,10 +340,7 @@ const MovieCard = () => {
                 variant="contained"
                 onMouseEnter={() => setHoverButton(true)}
                 onMouseLeave={() => setHoverButton(false)}
-                onClick={() => {
-                  setLoading(true);
-                  navigate("/recommendations");
-                }}
+                onClick={() => { ShowRecommendations(); }}
                 style={{
                   position: "absolute",
                   top: "5%",
