@@ -86,7 +86,6 @@ const MovieCard = () => {
     const endYear = matchLte ? parseInt(matchLte[1], 10) : null;
 
     const randomYear = Math.floor(Math.random() * (Number(endYear) - Number(startYear) + 1)) + Number(startYear);
-
     let url;
 
     if(endOfPages){
@@ -188,7 +187,7 @@ const MovieCard = () => {
     displayedMovieIdsRef.current.push(currentMovie?.id);
     if(value >= 3){
         setMovies([])
-        const url = buildMovieUrl({ type: "similar", currentMovie:currentMovie.id , page: page});
+        const url = buildMovieUrl({ type: "search", movieName:currentMovie.title, page: page});
         fetch(url, options)
         .then((res) => res.json())
         .then((data) => {
@@ -250,7 +249,8 @@ const MovieCard = () => {
               const movieNames = data.recommended_movies;
 
               movieNames.forEach((movieName) => {
-                fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(movieName)}&include_adult=false&language=en-US&page=1`, options)
+                const url = buildMovieUrl({ type: "search", movieName, page: 1});
+                fetch(url, options)
                   .then(res => res.json())
                   .then(res => { 
                     console.log(movieName, res.results[0])      
